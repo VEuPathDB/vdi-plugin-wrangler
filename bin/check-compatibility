@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+################################################################################
+#
+#                    Check Compatibility Script Example
+#
+# The Check Compatibility script is used to test whether a given dataset is
+# compatible with the target application database.  Compatibility with an app
+# DB is determined by whether that database contains all the dependencies
+# declared by the dataset's meta information.
+#
+# This script will be provided a stream, on STDIN, of newline delmited pairs of
+# dependency names and versions, with the name and version being separated by a
+# single tab character.
+#
+# This script may communicate log messages through the parent server by printing
+# to STDERR.  Messages printed to STDOUT will be disregarded by the parent
+# server.
+#
+# The success or failure of this script is communicated to the parent server by
+# returning specific status codes.  The status code 0 will be returned to report
+# that the dataset is compatible with the target app DB.  The status code 1 will
+# be returned to report that the dataset is not compatible with the target app
+# DB.  Any other status codes returned indicate that the script failed for
+# reasons unrelated to the compatibility of the dataset, such as due to an
+# internal error.
+#
+################################################################################
+
+
+# Get the current workspace directory.
+BIN_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+
+# Get the lib directory
+LIB_DIR="$(cd -- "$(dirname -- "$BIN_DIR")" &> /dev/null && pwd)/lib"
+
+# Source the includes.sh file for some common functionality
+. "$LIB_DIR/includes.sh"
+
+# Consume STDIN
+while read -r line; do
+  # Print a log message
+  logMessage "Got pair: $line"
+done < /dev/stdin
+

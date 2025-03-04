@@ -1,0 +1,5 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VEuPathDB/vdi-plugin-handler-server/main/schemata/install-data-request.schema.json#",
+  "vdiID": "cccccccccccccccccccccccccccccccc",
+  "projectID": "PlasmoDB"
+}

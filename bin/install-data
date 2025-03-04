@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# Get the current workspace directory.
+BIN_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+# Get the lib directory
+LIB_DIR="$(cd -- "$(dirname -- "$BIN_DIR")" &> /dev/null && pwd)/lib"
+
+# Include some common functionality
+. "$LIB_DIR/includes.sh"
+
+#
+# Input Handling
+#
+
+VDI_ID=$1
+INPUT_DIR=$2
+
+verifyDir "$INPUT_DIR" || exit $EXIT_CODE_UNEXPECTED_ERROR
+
+verifyEnv "DB_HOST" "$DB_HOST" || exit $EXIT_CODE_UNEXPECTED_ERROR
+verifyEnv "DB_PORT" "$DB_PORT" || exit $EXIT_CODE_UNEXPECTED_ERROR
+verifyEnv "DB_NAME" "$DB_NAME" || exit $EXIT_CODE_UNEXPECTED_ERROR
+verifyEnv "DB_USER" "$DB_USER" || exit $EXIT_CODE_UNEXPECTED_ERROR
+verifyEnv "DB_PASS" "$DB_PASS" || exit $EXIT_CODE_UNEXPECTED_ERROR
+verifyEnv "DB_SCHEMA" "$DB_SCHEMA" || exit $EXIT_CODE_UNEXPECTED_ERROR
+
+#
+# Script Body
+#
+
+>&2 env
+# TODO: Call some commands and do the things needed to install a dataset.

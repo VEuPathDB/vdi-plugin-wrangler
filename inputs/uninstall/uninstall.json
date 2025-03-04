@@ -1,0 +1,5 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VEuPathDB/vdi-plugin-handler-server/main/schemata/uninstall-request.schema.json#",
+  "vdiID": "dddddddddddddddddddddddddddddddd",
+  "projectID": "ExampleDB"
+}

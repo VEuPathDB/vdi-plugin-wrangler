@@ -1,0 +1,25 @@
+{
+  "vdiID": "ir4tmNahjLcAAQ",
+  "meta": {
+    "type": {
+      "name": "type name",
+      "version": "type version"
+    },
+    "projects": [
+      "ExampleDB"
+    ],
+    "visibility": "private",
+    "owner": 123456,
+    "name": "my dataset",
+    "origin": "",
+    "description": "my dataset description",
+    "summary": "my dataset summary",
+    "dependencies": [
+      {
+        "resourceIdentifier": "identifier",
+        "resourceDisplayName": "display name",
+        "resourceVersion": "version"
+      }
+    ]
+  }
+}

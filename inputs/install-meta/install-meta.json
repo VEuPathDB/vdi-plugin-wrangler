@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/VEuPathDB/vdi-plugin-handler-server/main/schemata/install-meta-request.schema.json#",
+  "vdiID": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "projectID": "ExampleDB",
+  "meta": {
+    "type": {
+      "name": "type name",
+      "version": "type version"
+    },
+    "projects": [
+      "ExampleDB"
+    ],
+    "owner": "ellie",
+    "name": "a dataset",
+    "summary": "a summary",
+    "description": "a description",
+    "dependencies": [
+      {
+        "resourceIdentifier": "resource identifier",
+        "resourceVersion": "resource version",
+        "resourceDisplayName": "resource display name"
+      }
+    ]
+  }
+}
