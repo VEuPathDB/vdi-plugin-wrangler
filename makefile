@@ -1,15 +1,14 @@
 IMAGE_NAME := $(shell grep 'name:' Jenkinsfile | sed "s/.\+'\(.\+\)'.\+/\1/g")
-CONTAINER_CMD := $(shell if command -v podman 2>&1 >/dev/null; then echo podman; else echo $(CONTAINER_CMD); fi)
 
 default:
 	@echo "Usage:"
 	@echo "  make build"
 	@echo
-	@echo "    Builds the $(CONTAINER_CMD) image for local use."
+	@echo "    Builds the docker image for local use."
 	@echo
 	@echo "  make start"
 	@echo
-	@echo "    Starts the project's $(CONTAINER_CMD) image as a background container."
+	@echo "    Starts the project's docker image as a background container."
 	@echo
 	@echo "  make stop"
 	@echo
@@ -17,19 +16,23 @@ default:
 	@echo
 	@echo "  make shell"
 	@echo
-	@echo "    Opens a bash session in a running instance of this project's $(CONTAINER_CMD) image."
+	@echo "    Opens a bash session in a running instance of this project's docker image."
+	@echo
+	@echo "  make logs"
+	@echo
+	@echo "    Attaches to the log output of a running instance of this project's docker image."
 
 build:
-	@$(CONTAINER_CMD) compose build
+	@docker compose build
 
 start:
-	@$(CONTAINER_CMD) compose up -d
+	@docker compose up -d
 
 stop:
-	@$(CONTAINER_CMD) compose down -v
+	@docker compose down -v
 
 shell:
-	@$(CONTAINER_CMD) exec -it $(IMAGE_NAME)-plugin-1 bash
+	@docker exec -it $(IMAGE_NAME)-plugin-1 bash
 
 logs:
-	@$(CONTAINER_CMD) logs -f $(IMAGE_NAME)-plugin-1
+	@docker logs -f $(IMAGE_NAME)-plugin-1
