@@ -2,11 +2,11 @@
 
 This is a VDI plugin that uses the [Study Wrangler](https://github.com/VEuPathDB/study-wrangler) to process user-uploaded files into EDA-loadable assets.
 
-# Set-up
+## Set-up
 
 This is TBC but feel free to ask @bobular about .env files etc.
 
-# Live dev
+## Live dev
 
 Create a file `docker-compose.override.yml` with the following
 
