@@ -2,4 +2,11 @@
 .vscode/
 .env
 
+# local tweaks to docker for development
+docker-compose.override.yml
+
+# this is mounted in the container by docker compose as /datasets
+mount/
+
+# emacs backups
 *~
