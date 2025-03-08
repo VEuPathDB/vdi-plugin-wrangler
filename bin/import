@@ -1,42 +1,37 @@
 #!/usr/bin/env bash
 
-# Get the current workspace directory.
-BIN_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-# Get the lib directory
-LIB_DIR="$(cd -- "$(dirname -- "$BIN_DIR")" &> /dev/null && pwd)/lib"
-
-# Include some common functionality
-. "$LIB_DIR/includes.sh"
-
-#
-# Utilities
-#
-
-printWarning() {
-  echo "$1"
-}
-
-#
-# Parameter Handling
-#
-
 INPUT_DIR=$1
 OUTPUT_DIR=$2
 
-verifyDir "${INPUT_DIR}"  || exit $EXIT_CODE_UNEXPECTED_ERROR
-verifyDir "${OUTPUT_DIR}" || exit $EXIT_CODE_UNEXPECTED_ERROR
+# TO DO: check if this is even needed
+VDI_IMPORT_ID=${VDI_IMPORT_ID-PLACEHOLDER_VDI_ID}
 
-#
-# Script Body
-#
+# TO DO: get category (e.g. phenotype, rnaseq, general (clinepi/popbio-like))
+# from somewhere. Currently falling back to 'phenotype'.
+CATEGORY=${CATEGORY-phenotype}
 
-logMessage "Here's a log message that will be printed to STDERR"
+# TO DO: validate CATEGORY here or in the R-script
+# ?
 
->&2 env
 
-for file in "${INPUT_DIR}"/*; do
-  logMessage "Copying ${file} to ${OUTPUT_DIR}"
-  printWarning "Here's a validation warning about ${file} that will be printed to STDOUT"
-  # validate "$file" || exit $EXIT_CODE_VALIDATION_ERROR
-  cp "${file}" "${OUTPUT_DIR}"
-done
+# Function to check if a path is absolute
+is_absolute() {
+  [[ "$1" = /* ]]
+}
+
+# Validate input and output directories
+if ! is_absolute "$INPUT_DIR"; then
+  echo "Error: INPUT_DIR must be an absolute path." >&2
+  exit 1
+fi
+
+if ! is_absolute "$OUTPUT_DIR"; then
+  echo "Error: OUTPUT_DIR must be an absolute path." >&2
+  exit 1
+fi
+
+# change to a directory we can rely on
+cd /opt/veupathdb
+
+Rscript bin/wrangle.R $CATEGORY $INPUT_DIR $OUTPUT_DIR
+
