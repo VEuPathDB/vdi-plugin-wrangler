@@ -15,6 +15,7 @@ services:
   plugin:
     volumes:
       - ./bin:/opt/veupathdb/bin
+      - ./lib/R:/opt/veupathdb/lib/R
 ```
 so that you can work on scripts in the `bin` directory without rebuilding/restarting the container.
 
