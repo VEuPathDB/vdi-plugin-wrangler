@@ -1,6 +1,5 @@
 #!/usr/bin/Rscript
 
-library(glue) ### TO DO - update study.wrangler to import these where needed
 library(tidyverse)
 library(study.wrangler)
 

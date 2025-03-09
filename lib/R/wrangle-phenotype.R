@@ -4,7 +4,7 @@ library(study.wrangler)
 #'
 #' wrangle(input_dir)
 #'
-#' @returns a study object
+#' @return a study object
 #'
 #' Expects only one *.txt or *.tsv file in input directory
 #'
@@ -25,6 +25,6 @@ wrangle <- function(input_dir) {
   if (entity %>% validate() == FALSE) {
     stop("wrangle-phenotype.R ERROR: entity does not validate.")
   }
-  print(str(entity))
-  return(study_from_entities(entities = entity, name = "study_name_TBC"))
+
+  return(study_from_entities(entities = list(entity), name = "study_name_TBC"))
 }
