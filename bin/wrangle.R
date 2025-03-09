@@ -1,5 +1,9 @@
 #!/usr/bin/Rscript
 
+library(glue) ### TO DO - update study.wrangler to import these where needed
+library(tidyverse)
+library(study.wrangler)
+
 # Get command-line arguments
 args <- commandArgs(trailingOnly = TRUE)
 
@@ -41,4 +45,11 @@ if (!exists("wrangle", mode = "function")) {
 }
 
 # Execute the wrangling function
-wrangle(INPUT_DIR, OUTPUT_DIR)
+study <- wrangle(INPUT_DIR)
+
+# dump the database artifacts
+if (study %>% validate()) {
+  study %>% export_to_vdi(OUTPUT_DIR)
+} else {
+  stop(paste("Error: Script", script_path, "did not return a valid study from ", INPUT_DIR), call. = FALSE)
+}
