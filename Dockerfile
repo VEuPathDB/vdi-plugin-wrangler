@@ -65,13 +65,13 @@ RUN R -e "install.packages(c('tidyverse', 'skimr', 'remotes', 'BiocManager'))"
 RUN R -e "BiocManager::install('SummarizedExperiment')"
 RUN R -e "BiocManager::install('DESeq2')"
 
-ARG VEUPATHUTILS_GIT_REF="v2.7.0" \
-    PLOT_DATA_GIT_REF="v5.4.2" \
-    STUDY_WRANGLER_GIT_REF="01d9d0ce2b1190b8cd2dc2460852f0b0f27b44fd"
+ARG VEUPATHUTILS_GIT_REF="v2.7.0"
 RUN R -e "remotes::install_github('VEuPathDB/veupathUtils', '${VEUPATHUTILS_GIT_REF}', upgrade_dependencies=F)"
 # plot.data needed for binWidth function
+ARG PLOT_DATA_GIT_REF="v5.4.2"
 RUN R -e "remotes::install_github('VEuPathDB/plot.data', '${PLOT_DATA_GIT_REF}', upgrade_dependencies=F)"
 # and finally the wrangler itself
+ARG STUDY_WRANGLER_GIT_REF="v1.0.1"
 RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_GIT_REF}', upgrade_dependencies=F)"
 
 ### end of R stuff ###
