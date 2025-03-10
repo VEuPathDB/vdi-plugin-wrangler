@@ -74,3 +74,10 @@ verifyEnv() {
     return 1
   fi
 }
+
+# Function to check if a path is absolute
+verifyAbsolute() {
+  if [[ ! "$1" = /* ]]; then
+    logMessage "directory must be an absolute path. '$1' was provided."
+  fi
+}

@@ -27,7 +27,17 @@ RUN git clone https://github.com/VEuPathDB/lib-vdi-plugin-study.git \
     && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
     && cp bin/* /opt/veupathdb/bin
 
-### R installation takes a while so it goes first ###
+# Additional GUS repo checkouts
+ARG APICOMMONDATA_COMMIT_HASH=699a94aab7c853205274aed2039ce0d2e4b76e30 \
+    CLINEPIDATA_GIT_COMMIT_SHA=8d31ba1b5cf7f6b022058b7c89e8e3ab0665f543 \
+    EDA_NEXTFLOW_GIT_COMMIT_SHA=f113cca94b9d16695dc4ac721de211d72e7c396f
+COPY bin/buildGus.bash /usr/bin/buildGus.bash
+RUN /usr/bin/buildGus.bash
+
+# Install vdi plugin HTTP server
+ARG PLUGIN_SERVER_VERSION="v8.1.1"
+RUN set -o pipefail \
+    && curl "https://github.com/VEuPathDB/vdi-plugin-handler-server/releases/download/${PLUGIN_SERVER_VERSION}/docker-download.sh" -Lf --no-progress-meter | bash
 
 ## base R ##
 
@@ -71,29 +81,13 @@ RUN R -e "remotes::install_github('VEuPathDB/veupathUtils', '${VEUPATHUTILS_GIT_
 ARG PLOT_DATA_GIT_REF="v5.4.2"
 RUN R -e "remotes::install_github('VEuPathDB/plot.data', '${PLOT_DATA_GIT_REF}', upgrade_dependencies=F)"
 # and finally the wrangler itself
-ARG STUDY_WRANGLER_GIT_REF="v1.0.2"
+ARG STUDY_WRANGLER_GIT_REF="v1.0.4"
 RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_GIT_REF}', upgrade_dependencies=F)"
 
-### end of R stuff ###
-
-# >>> TO DO <<< move these before R
-
-# Additional GUS repo checkouts
-ARG APICOMMONDATA_COMMIT_HASH=699a94aab7c853205274aed2039ce0d2e4b76e30 \
-    CLINEPIDATA_GIT_COMMIT_SHA=8d31ba1b5cf7f6b022058b7c89e8e3ab0665f543 \
-    EDA_NEXTFLOW_GIT_COMMIT_SHA=f113cca94b9d16695dc4ac721de211d72e7c396f
-COPY bin/buildGus.bash /usr/bin/buildGus.bash
-RUN /usr/bin/buildGus.bash
-
-
-# Install vdi plugin HTTP server
-ARG PLUGIN_SERVER_VERSION="v8.1.1"
-RUN set -o pipefail \
-    && curl "https://github.com/VEuPathDB/vdi-plugin-handler-server/releases/download/${PLUGIN_SERVER_VERSION}/docker-download.sh" -Lf --no-progress-meter | bash
-
+# scripts and paths
 
 COPY bin /opt/veupathdb/bin/
-RUN chmod +x /opt/veupathdb/bin/*
+COPY lib /opt/veupathdb/lib/
 ENV PATH="$PATH:/opt/veupathdb/bin"
 
 CMD ["run-plugin.sh"]

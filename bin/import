@@ -13,25 +13,17 @@ CATEGORY=${CATEGORY-phenotype}
 # TO DO: validate CATEGORY here or in the R-script
 # ?
 
-
-# Function to check if a path is absolute
-is_absolute() {
-  [[ "$1" = /* ]]
-}
-
-# Validate input and output directories
-if ! is_absolute "$INPUT_DIR"; then
-  echo "Error: INPUT_DIR must be an absolute path." >&2
-  exit 1
-fi
-
-if ! is_absolute "$OUTPUT_DIR"; then
-  echo "Error: OUTPUT_DIR must be an absolute path." >&2
-  exit 1
-fi
-
 # change to a directory we can rely on
 cd /opt/veupathdb
+
+# include some utility functions
+. lib/includes.sh
+
+# Validate input and output directories
+verifyAbsolute "${INPUT_DIR}"  || exit $EXIT_CODE_UNEXPECTED_ERROR
+verifyAbsolute "${OUTPUT_DIR}" || exit $EXIT_CODE_UNEXPECTED_ERROR
+verifyDir "${INPUT_DIR}"  || exit $EXIT_CODE_UNEXPECTED_ERROR
+verifyDir "${OUTPUT_DIR}" || exit $EXIT_CODE_UNEXPECTED_ERROR
 
 Rscript bin/wrangle.R $CATEGORY $INPUT_DIR $OUTPUT_DIR
 
