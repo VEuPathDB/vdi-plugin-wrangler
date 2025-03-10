@@ -7,32 +7,45 @@ library(study.wrangler)
 args <- commandArgs(trailingOnly = TRUE)
 
 # Ensure we have the expected number of arguments
-if (length(args) != 3) {
-  stop("Usage: wrangle.R <CATEGORY> <INPUT_DIR> <OUTPUT_DIR>", call. = FALSE)
+if (length(args) != 2) {
+  stop("Usage: wrangle.R <INPUT_DIR> <OUTPUT_DIR>", call. = FALSE)
 }
 
-CATEGORY <- args[1]
-INPUT_DIR <- args[2]
-OUTPUT_DIR <- args[3]
+input_dir <- args[1]
+output_dir <- args[2]
 
 # Validate that directories exist
-if (!dir.exists(INPUT_DIR)) {
-  stop(paste("Error: INPUT_DIR does not exist:", INPUT_DIR), call. = FALSE)
+if (!dir.exists(input_dir)) {
+  stop(paste("Error: input_dir does not exist:", input_dir), call. = FALSE)
+}
+if (!dir.exists(output_dir)) {
+  stop(paste("Error: output_dir does not exist:", output_dir), call. = FALSE)
 }
 
-if (!dir.exists(OUTPUT_DIR)) {
-  stop(paste("Error: OUTPUT_DIR does not exist:", OUTPUT_DIR), call. = FALSE)
-}
+#
+# figure out the category
+#
 
+### TO DO: handle default fallback better ###
+category <- "phenotype" # default
+meta_json_path <- file.path(input_dir, "meta.json")
+if (file.exists(meta_json_path)) {
+  metadata <- jsonlite::read_json(meta_json_path)
+  if (!is.null(metadata$category)) {
+    category <- metadata$category
+  }
+} else {
+  warning(paste0("WARNING: No metadata file found in: ", meta_json_path, "\nUsing default category: ", category), call. = FALSE)
+}
 
 #
 # Construct the expected script path: /lib/R/wrangle-<CATEGORY>.R
 #
-script_path <- file.path("lib/R", paste0("wrangle-", CATEGORY, ".R"))
+script_path <- file.path("lib/R", paste0("wrangle-", category, ".R"))
 
 # Check if the script exists before sourcing
 if (!file.exists(script_path)) {
-  stop(paste("Error: No wrangling script found for CATEGORY:", CATEGORY, "\nExpected:", script_path), call. = FALSE)
+  stop(paste("Error: No wrangling script found for category:", category, "\nExpected:", script_path), call. = FALSE)
 }
 
 # Load the wrangle function dynamically
@@ -44,11 +57,11 @@ if (!exists("wrangle", mode = "function")) {
 }
 
 # Execute the wrangling function
-study <- wrangle(INPUT_DIR)
+study <- wrangle(input_dir)
 
 # dump the database artifacts
 if (study %>% validate()) {
-  study %>% export_to_vdi(OUTPUT_DIR)
+  study %>% export_to_vdi(output_dir)
 } else {
-  stop(paste("Error: Script", script_path, "did not return a valid study from ", INPUT_DIR), call. = FALSE)
+  stop(paste("Error: Script", script_path, "did not return a valid study from ", input_dir), call. = FALSE)
 }
