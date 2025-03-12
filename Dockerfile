@@ -69,7 +69,7 @@ RUN apt-get update && apt-get install -y \
 ## study-wrangler and dependencies ##
 
 # Install Tidyverse from CRAN
-RUN R -e "install.packages(c('tidyverse', 'skimr', 'remotes', 'BiocManager'))"
+RUN R -e "install.packages(c('tidyverse', 'skimr', 'remotes', 'BiocManager', 'devtools'))"
 
 # plot.data dependencies not automatically installed:
 RUN R -e "BiocManager::install('SummarizedExperiment')"
@@ -81,13 +81,14 @@ RUN R -e "remotes::install_github('VEuPathDB/veupathUtils', '${VEUPATHUTILS_GIT_
 ARG PLOT_DATA_GIT_REF="v5.4.2"
 RUN R -e "remotes::install_github('VEuPathDB/plot.data', '${PLOT_DATA_GIT_REF}', upgrade_dependencies=F)"
 # and finally the wrangler itself
-ARG STUDY_WRANGLER_GIT_REF="v1.0.4"
+ARG STUDY_WRANGLER_GIT_REF="v1.0.6"
 RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_GIT_REF}', upgrade_dependencies=F)"
 
 # scripts and paths
 
 COPY bin /opt/veupathdb/bin/
 COPY lib /opt/veupathdb/lib/
+COPY tests /opt/veupathdb/tests/
 ENV PATH="$PATH:/opt/veupathdb/bin"
 
 CMD ["run-plugin.sh"]
