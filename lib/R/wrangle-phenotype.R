@@ -22,6 +22,24 @@ wrangle <- function(input_dir) {
 
   entity <- entity_from_file(input_files, name = "phenotype")
 
+  # see how many ID columns were detected
+
+  id_column_metadata <- entity %>% get_id_column_metadata()
+
+  # assume first column is the gene ID column
+  id_column_names <- id_column_metadata %>% pull(variable)
+  gene_id_column <- id_column_names[1]
+
+  if (length(id_column_names) > 1) {
+    # demote any extra ID columns to regular variables
+    non_gene_column_names <- id_column_names[-1]
+    entity <- entity %>% redetect_columns_as_variables(non_gene_column_names)
+  }
+
+  if (gene_id_column == 'gene') {
+  
+  } 
+
   if (entity %>% validate() == FALSE) {
     stop("wrangle-phenotype.R ERROR: entity does not validate.")
   }
