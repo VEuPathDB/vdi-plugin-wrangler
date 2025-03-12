@@ -1,7 +1,9 @@
 #!/usr/bin/Rscript
 
-library(tidyverse)
-library(study.wrangler)
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(study.wrangler)
+})
 
 # Get command-line arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -56,8 +58,11 @@ if (!exists("wrangle", mode = "function")) {
   stop(paste("Error: Script", script_path, "did not define a function named 'wrangle'"), call. = FALSE)
 }
 
+# determine study name as either $VDI_IMPORT_ID or the input directory path
+study_name <- Sys.getenv("VDI_IMPORT_ID", unset = input_dir)
+
 # Execute the wrangling function
-study <- wrangle(input_dir)
+study <- wrangle(input_dir) %>% set_study_name(study_name)
 
 # dump the database artifacts
 if (study %>% validate()) {

@@ -26,5 +26,5 @@ wrangle <- function(input_dir) {
     stop("wrangle-phenotype.R ERROR: entity does not validate.")
   }
 
-  return(study_from_entities(entities = list(entity), name = "study_name_TBC"))
+  return(study_from_entities(entities = list(entity)))
 }
