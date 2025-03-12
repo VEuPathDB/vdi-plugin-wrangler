@@ -56,7 +56,12 @@ for (category in categories) {
         }
       }
 
-      # Now we repeat some of the code in `bin/wrangle.R`
+      valid_expectations <- c("pass", "fail")
+      if (!(test_expectation %in% valid_expectations)) {
+        stop(glue::glue("Invalid test expectation '{test_expectation}'. Expected one of: {paste(valid_expectations, collapse=', ')}"))
+      }
+
+      # Determine appropriate path to the script with the appropriate `wrangle()` function
       script_path <- file.path(original_wd, "lib/R", paste0("wrangle-", category, ".R"))
 
       if (!file.exists(script_path)) {
@@ -64,38 +69,36 @@ for (category in categories) {
         return() # from `test_that()` scope
       }
 
-      # We're about to load a `wrangle()` function from source code.
-      # If necessary, delete any existing function of that name.
-      if (exists("wrangle", mode = "function", envir = .GlobalEnv)) {
-        rm(wrangle, envir = .GlobalEnv)
-      }
-
-      # Load the appropriate `wrangle` function dynamically
-      source(script_path)
-
-      # Ensure `wrangle()` is defined after sourcing
-      if (!exists("wrangle", mode = "function")) {
-        skip(glue::glue("No `wrangle` function in '{script_path}'"))
-        return()
-      }
-
-      ## The next few lines are modified from `bin/wrangle.R` ##
-      
-      # Determine study name as either $VDI_IMPORT_ID or the input directory path
-      study_name <- Sys.getenv("VDI_IMPORT_ID", unset = example_dir)
-      
-      # Tell testthat to accept 'pass' (no errors) or 'fail' (expect an error)
-      expect_function <- if (test_expectation == 'pass') expect_no_error else expect_error
-
-      expect_function({
-        study <- wrangle(example_dir) %>% set_study_name(study_name)
-        if (study %>% validate()) {
-          tmp_dir <- tempfile("temp_output_")
-          dir.create(tmp_dir)
-          study %>% export_to_vdi(tmp_dir)
-        } else {
-          stop(glue::glue("Validation of study failed for '{category}/{example}'"))
+      # local scope for dynamic `wrangle()` function
+      local({
+        # Load the appropriate `wrangle` function dynamically
+        source(script_path)
+  
+        # Ensure `wrangle()` is defined after sourcing
+        if (!exists("wrangle", mode = "function")) {
+          skip(glue::glue("No `wrangle` function in '{script_path}'"))
+          return()
         }
+  
+        # Determine study name as either $VDI_IMPORT_ID or the input directory path
+        study_name <- Sys.getenv("VDI_IMPORT_ID", unset = example_dir)
+        
+        expect_function <- if (test_expectation == 'pass')
+	  expect_no_error
+	else
+	  expect_error
+  
+        expect_function({
+          study <- wrangle(example_dir) %>% set_study_name(study_name)
+          if (study %>% validate()) {
+            tmp_dir <- tempfile("temp_output_")
+            dir.create(tmp_dir)
+            withr::defer(unlink(tmp_dir, recursive = TRUE))  # Ensure cleanup
+            study %>% export_to_vdi(tmp_dir)
+          } else {
+            stop(glue::glue("Validation of study failed for '{category}/{example}'"))
+          }
+        })
       })
     })
   }
