@@ -81,7 +81,7 @@ RUN R -e "remotes::install_github('VEuPathDB/veupathUtils', '${VEUPATHUTILS_GIT_
 ARG PLOT_DATA_GIT_REF="v5.4.2"
 RUN R -e "remotes::install_github('VEuPathDB/plot.data', '${PLOT_DATA_GIT_REF}', upgrade_dependencies=F)"
 # and finally the wrangler itself
-ARG STUDY_WRANGLER_GIT_REF="v1.0.6"
+ARG STUDY_WRANGLER_GIT_REF="v1.0.7"
 RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_GIT_REF}', upgrade_dependencies=F)"
 
 # scripts and paths

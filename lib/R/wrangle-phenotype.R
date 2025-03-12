@@ -1,6 +1,3 @@
-library(tidyverse)
-library(study.wrangler)
-
 #'
 #' wrangle(input_dir)
 #'
@@ -23,7 +20,6 @@ wrangle <- function(input_dir) {
   entity <- entity_from_file(input_files, name = "phenotype")
 
   # see how many ID columns were detected
-
   id_column_metadata <- entity %>% get_id_column_metadata()
 
   # assume first column is the gene ID column
