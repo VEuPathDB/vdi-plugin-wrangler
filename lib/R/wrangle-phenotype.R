@@ -55,13 +55,12 @@ wrangle <- function(input_dir) {
         mutate(gene = geneID)
       ) %>%
       sync_variable_metadata() %>%
-      redetect_columns_as_variables('gene') %>%
-      set_variable_metadata('gene', stable_id = 'VAR_bdc8e679')
+      redetect_columns_as_variables('gene')
   }
 
   # give the 'gene' column the stable_id that has been used elsewhere for phenotype datasets
   # e.g. in ApiCommonModel/Model/lib/wdk/model/records/geneTableQueries.xml
-  entity <- entity %>% set_variable_metadata('gene', stable_id = 'VAR_bdc8e679')
+  entity <- entity %>% set_variable_metadata('gene', display_name = 'Gene ID', stable_id = 'VAR_bdc8e679')
 
   if (entity %>% validate() == FALSE) {
     stop("wrangle-phenotype.R ERROR: entity does not validate.")
