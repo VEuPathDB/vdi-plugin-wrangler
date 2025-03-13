@@ -37,9 +37,31 @@ wrangle <- function(input_dir) {
     entity <- entity %>% redetect_columns_as_variables(non_gene_column_names)
   }
 
-  if (gene_id_column == 'gene') {
+  # we're now going to add a 'gene' column (copy of 'geneID') unless it already
+  # exists and is identical to 'geneID'.
   
-  } 
+  variable_column_names <- entity %>% get_variable_metadata() %>% pull('variable')
+  if ('gene' %in% variable_column_names) {
+    data <- entity %>% get_data()
+    if (!identical(data$geneID, data$gene)) {
+      # if it's not identical, it's too complicated to fix - just throw an error
+      stop(paste("wrangle-phenotype.R ERROR: user-supplied 'gene' column was not identical to 'geneID' column in:", input_file))
+    }
+  } else {
+    # in most cases we want to create a copy of the geneID column called 'gene'
+    # and convert it to a regular variable column
+    entity <- entity %>%
+      modify_data(
+        mutate(gene = geneID)
+      ) %>%
+      sync_variable_metadata() %>%
+      redetect_columns_as_variables('gene') %>%
+      set_variable_metadata('gene', stable_id = 'VAR_bdc8e679')
+  }
+
+  # give the 'gene' column the stable_id that has been used elsewhere for phenotype datasets
+  # e.g. in ApiCommonModel/Model/lib/wdk/model/records/geneTableQueries.xml
+  entity <- entity %>% set_variable_metadata('gene', stable_id = 'VAR_bdc8e679')
 
   if (entity %>% validate() == FALSE) {
     stop("wrangle-phenotype.R ERROR: entity does not validate.")
