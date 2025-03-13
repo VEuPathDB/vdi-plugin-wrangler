@@ -78,6 +78,15 @@ so that you can work on the code and tests without rebuilding/restarting the con
 
 You can add further paths as required.
 
+## Running the import tests
+
+In the container shell:
+
+```
+cd /opt/veupathdb
+bin/run_tests.R
+```
+
 ## Adding a new category of wrangler
 
 Let's call this 'rnaseq'
