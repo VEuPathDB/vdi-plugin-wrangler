@@ -90,6 +90,8 @@ bin/run_tests.R
 Note that the tests (more detail below) only test that the import wrangling either
 a) completes without warnings or errors if none are expected, or b) throws an error if one is expected.
 
+**The tests do not currently check the output of the wrangler.**
+
 ## Adding a new category of wrangler
 
 Let's call this 'rnaseq'
