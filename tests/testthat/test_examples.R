@@ -21,6 +21,15 @@ if (!dir.exists(original_wd) || original_wd == "") {
   skip(glue::glue("Skipping all tests: ORIGINAL_WD ('{original_wd}') is not set or invalid."))
 }
 
+
+expect_clean <- function(code) {
+  testthat::expect_no_error({
+    testthat::expect_no_warning({
+      code
+    })
+  })
+}
+
 ### TEST ALL THE DIFFERENT CATEGORIES (WRANGLER SCENARIOS) ###
 
 categories <- list.dirs(recursive = FALSE, full.names = FALSE)
@@ -84,7 +93,7 @@ for (category in categories) {
         study_name <- Sys.getenv("VDI_IMPORT_ID", unset = example_dir)
         
         expect_function <- if (test_expectation == 'pass')
-	  expect_no_error
+	  expect_clean
 	else
 	  expect_error
   
