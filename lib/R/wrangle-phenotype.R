@@ -17,7 +17,8 @@ wrangle <- function(input_dir) {
     stop(paste("wrangle-phenotype.R ERROR: No txt/tsv input file found in:", input_dir))
   }
 
-  entity <- entity_from_file(input_files, name = "phenotype")
+  input_file <- input_files[1]
+  entity <- entity_from_file(input_file, name = "phenotype")
 
   # see how many ID columns were detected
   id_column_metadata <- entity %>% get_id_column_metadata()
@@ -25,6 +26,10 @@ wrangle <- function(input_dir) {
   # assume first column is the gene ID column
   id_column_names <- id_column_metadata %>% pull(variable)
   gene_id_column <- id_column_names[1]
+
+  if (gene_id_column != "geneID") {
+    stop(paste("wrangle-phenotype.R ERROR: 'geneID' column not present or misnamed in:", input_file))
+  }
 
   if (length(id_column_names) > 1) {
     # demote any extra ID columns to regular variables
