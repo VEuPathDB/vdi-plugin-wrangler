@@ -35,7 +35,7 @@ COPY bin/buildGus.bash /usr/bin/buildGus.bash
 RUN /usr/bin/buildGus.bash
 
 # Install vdi plugin HTTP server
-ARG PLUGIN_SERVER_VERSION="v8.1.1"
+ARG PLUGIN_SERVER_VERSION="v8.1.3"
 RUN set -o pipefail \
     && curl "https://github.com/VEuPathDB/vdi-plugin-handler-server/releases/download/${PLUGIN_SERVER_VERSION}/docker-download.sh" -Lf --no-progress-meter | bash
 
