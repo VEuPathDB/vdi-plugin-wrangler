@@ -1,0 +1,9 @@
+household	participant \\ Descriptors	Name	Nickname	Sex	Family.Role
+H001	H001-P1	Alice	Di	Female	Relative
+H001	H001-P2	Bob	Bobby	Male	Child
+H001	H001-P3	Diana	NA	Female	Parent
+H002	H002-P1	Charlie	Chuck	Male	Child
+H002	H002-P2	Anna	NA	Female	Relative
+H003	H003-P1	Helen	Hells	Female	Parent
+H003	H003-P2	Eve	NA	Female	Child
+H003	H003-P3	Michael	Micky	Male	Child
