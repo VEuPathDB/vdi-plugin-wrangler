@@ -62,6 +62,14 @@ wrangle <- function(input_dir) {
   # e.g. in ApiCommonModel/Model/lib/wdk/model/records/geneTableQueries.xml
   entity <- entity %>% set_variable_metadata('gene', display_name = 'Gene ID', stable_id = 'VAR_bdc8e679')
 
+  # check there's a number variable
+  number_variables <- entity %>%
+    get_variable_metadata() %>%
+    filter(data_type %in% c('number', 'integer'))
+  if (nrow(number_variables) == 0) {
+    stop(paste("wrangle-phenotype.R ERROR: no numeric column in:", input_file))
+  }
+
   if (entity %>% validate() == FALSE) {
     stop("wrangle-phenotype.R ERROR: entity does not validate.")
   }
