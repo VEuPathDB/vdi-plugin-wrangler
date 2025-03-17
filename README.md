@@ -152,3 +152,10 @@ wrangle <- function(input_dir) {
   return(study_from_entities(entities = list(entity)))
 }
 ```
+
+### Add documentation
+
+This should be enough information for outreach to make user-facing documentation for the upload form.
+
+e.g. see [the format documentation for phenotype](./doc/phenotype.md)
+
