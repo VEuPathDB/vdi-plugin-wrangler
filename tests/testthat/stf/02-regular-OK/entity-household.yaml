@@ -1,0 +1,32 @@
+name: household
+display_name: household
+display_name_plural: households
+
+id_columns:
+  - id_column: Household.Id
+    entity_name: household
+
+variables:
+  - variable: Number.of.animals
+    provider_label:
+      - Number of animals
+    data_type: integer
+    data_shape: continuous
+  - variable: Owns.property
+    provider_label:
+      - Owns property
+    data_type: string
+    data_shape: categorical
+  - variable: Enrollment.date
+    provider_label:
+      - Enrollment date
+    data_type: date
+    data_shape: continuous
+  - variable: Construction.material
+    provider_label:
+      - Construction material
+    data_type: string
+    data_shape: categorical
+
+categories: []
+

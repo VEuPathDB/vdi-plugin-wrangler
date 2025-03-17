@@ -1,0 +1,4 @@
+Household.Id \\ Descriptors	Number.of.animals	Owns.property	Enrollment.date	Construction.material
+H001	4	Yes	2021-01-09	Concrete
+H002	3	No	2021-02-28	Timber
+H003	3	Yes	2021-03-13	Concrete

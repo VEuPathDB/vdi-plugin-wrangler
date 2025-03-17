@@ -1,0 +1,33 @@
+name: participant
+display_name: participant
+display_name_plural: participants
+
+id_columns:
+  - id_column: Household.Id
+    entity_name: household
+    entity_level: -1
+  - id_column: Participant.Id
+    entity_name: participant
+
+variables:
+  - variable: Name
+    data_type: string
+    data_shape: categorical
+  - variable: Nickname
+    provider_label:
+      - Nickname
+    data_type: string
+    data_shape: categorical
+  - variable: Sex
+    provider_label:
+      - Sex
+    data_type: string
+    data_shape: categorical
+  - variable: Family.Role
+    provider_label:
+      - Family Role
+    data_type: string
+    data_shape: categorical
+
+categories: []
+

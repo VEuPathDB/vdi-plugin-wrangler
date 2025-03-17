@@ -1,0 +1,43 @@
+name: observation
+display_name: observation
+display_name_plural: observations
+
+id_columns:
+  - id_column: Household.Id
+    entity_name: household
+    entity_level: -2
+  - id_column: Participant.Id
+    entity_name: participant
+    entity_level: -1
+  - id_column: Part..Obs..Id
+    entity_name: observation
+
+variables:
+  - variable: Observation.date
+    provider_label:
+      - Observation date
+    data_type: date
+    data_shape: continuous
+  - variable: Height..cm.
+    provider_label:
+      - Height (cm)
+    data_type: integer
+    data_shape: continuous
+  - variable: Weight..kg.
+    provider_label:
+      - Weight (kg)
+    data_type: integer
+    data_shape: continuous
+  - variable: MUAC..cm.
+    provider_label:
+      - MUAC (cm)
+    data_type: number
+    data_shape: continuous
+  - variable: Teeth.brushed.today
+    provider_label:
+      - Teeth brushed today
+    data_type: integer
+    data_shape: continuous
+
+categories: []
+
