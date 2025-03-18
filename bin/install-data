@@ -1,32 +1,57 @@
-#!/usr/bin/env bash
+#!/usr/bin/perl
+use lib "$ENV{GUS_HOME}/lib/perl";
+use ApiCommonData::Load::InstallEdaStudyFromArtifacts;
 
-# Get the current workspace directory.
-BIN_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
-# Get the lib directory
-LIB_DIR="$(cd -- "$(dirname -- "$BIN_DIR")" &> /dev/null && pwd)/lib"
+# use these for local dev
+#use FindBin;
+#use lib "$FindBin::Bin/../lib/perl";
+#use InstallEdaStudyFromArtifacts;
 
-# Include some common functionality
-. "$LIB_DIR/includes.sh"
+use strict;
 
-#
-# Input Handling
-#
+my @envVars = ('DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_PLATFORM', 'DB_USER', 'DB_PASS', 'DB_SCHEMA', 'DATA_FILES');
 
-VDI_ID=$1
-INPUT_DIR=$2
+my ($userDatasetId, $inputDir) = @ARGV;
 
-verifyDir "$INPUT_DIR" || exit $EXIT_CODE_UNEXPECTED_ERROR
+usage() unless scalar(@ARGV) == 2;
 
-verifyEnv "DB_HOST" "$DB_HOST" || exit $EXIT_CODE_UNEXPECTED_ERROR
-verifyEnv "DB_PORT" "$DB_PORT" || exit $EXIT_CODE_UNEXPECTED_ERROR
-verifyEnv "DB_NAME" "$DB_NAME" || exit $EXIT_CODE_UNEXPECTED_ERROR
-verifyEnv "DB_USER" "$DB_USER" || exit $EXIT_CODE_UNEXPECTED_ERROR
-verifyEnv "DB_PASS" "$DB_PASS" || exit $EXIT_CODE_UNEXPECTED_ERROR
-verifyEnv "DB_SCHEMA" "$DB_SCHEMA" || exit $EXIT_CODE_UNEXPECTED_ERROR
+for my $envVar (@envVars) { die "Missing env variable '$envVar'\n" unless $ENV{$envVar}; }
 
-#
-# Script Body
-#
+my $dataFiles = $ENV{DATA_FILES} . '/' . $userDatasetId;
 
->&2 env
-# TODO: Call some commands and do the things needed to install a dataset.
+my %requiredVars = ('DB_HOST' => $ENV{DB_HOST}, 
+                    'DB_PORT' => $ENV{DB_PORT}, 
+                    'DB_NAME' => $ENV{DB_NAME}, 
+                    'DB_PLATFORM' => $ENV{DB_PLATFORM}, 
+                    'DB_USER' => $ENV{DB_USER}, 
+                    'DB_PASS' => $ENV{DB_PASS}, 
+                    'DB_SCHEMA' => $ENV{DB_SCHEMA}, 
+                    'DATA_FILES' => $dataFiles, 
+                    'INPUT_DIR' => $inputDir,
+#		    'DRYRUN' => 1,
+		    'USER_DATASET_ID' => $userDatasetId
+    );
+
+my $installer = ApiCommonData::Load::InstallEdaStudyFromArtifacts->new(\%requiredVars);
+
+$installer->installData();
+
+sub usage {
+
+  my $envStr = '$' . join(", \$", @envVars);
+
+  die "
+Install an IsaSimple user dataset into the VDI dataset schema.
+
+Usage: install-data vdi_dataset_id files_dir
+
+Where:
+  vdi_dataset_id:  a vdi user dataset id
+  files_dir:       a directory containing an install.json manifest file, including details of table configurations, and *.cache tables holding tabular data.
+
+Env: $envStr
+
+";
+}
+
+

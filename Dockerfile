@@ -28,7 +28,7 @@ RUN git clone https://github.com/VEuPathDB/lib-vdi-plugin-study.git \
     && cp bin/* /opt/veupathdb/bin
 
 # Additional GUS repo checkouts
-ARG APICOMMONDATA_COMMIT_HASH=699a94aab7c853205274aed2039ce0d2e4b76e30 \
+ARG APICOMMONDATA_COMMIT_HASH=d317f96aa65a0a19f86fdb6dd0fd67c803637166 \
     CLINEPIDATA_GIT_COMMIT_SHA=8d31ba1b5cf7f6b022058b7c89e8e3ab0665f543 \
     EDA_NEXTFLOW_GIT_COMMIT_SHA=f113cca94b9d16695dc4ac721de211d72e7c396f
 COPY bin/buildGus.bash /usr/bin/buildGus.bash
