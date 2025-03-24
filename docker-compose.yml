@@ -1,5 +1,6 @@
 services:
   plugin:
+    image: veupathdb/vdi-plugin-wrangler
     build:
       context: .
       dockerfile: Dockerfile
