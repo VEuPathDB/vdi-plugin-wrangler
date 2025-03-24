@@ -14,10 +14,54 @@ RUN perl -MCPAN -e 'install qq(Switch)' \
 
 # Ensure we log in the correct timezone.
 RUN apt-get update \
-    && apt-get install -y tzdata \
+    && apt-get install -y \
+        ca-certificates curl \
+        dirmngr \
+        gnupg \
+        libxml2-dev libcurl4-openssl-dev libssl-dev libglpk-dev libjpeg-dev \
+        libfreetype6-dev libfontconfig1-dev libharfbuzz-dev libfribidi-dev \
+        libpng-dev libtiff5-dev \
+        software-properties-common \
+        tzdata \
     && apt-get clean \
     && cp /usr/share/zoneinfo/America/New_York /etc/localtime \
     && echo ${TZ} > /etc/timezone
+
+## base R ##
+
+ARG CRAN="https://cloud.r-project.org"
+
+# Base image Ubuntu 24.10 is "oracular" but we need to use 24.04 "noble"
+# because there are no R packages for non-LTS Ubuntu versions
+ARG UBUNTU_CODENAME_FOR_R=noble
+
+# Install R Base
+RUN curl -fsSL ${CRAN}/bin/linux/ubuntu/marutter_pubkey.asc \
+    | gpg --dearmor -o /usr/share/keyrings/cran-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/cran-archive-keyring.gpg] ${CRAN}/bin/linux/ubuntu ${UBUNTU_CODENAME_FOR_R}-cran40/" > /etc/apt/sources.list.d/cran.list \
+    && apt-get update \
+    && apt-get install -y r-base r-base-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+
+## non-veupathdb study-wrangler dependencies ##
+
+# Install Tidyverse from CRAN
+RUN R -e "install.packages(c('tidyverse', 'skimr', 'remotes', 'BiocManager', 'devtools'))"
+
+# plot.data dependencies not automatically installed:
+RUN R -e "BiocManager::install('SummarizedExperiment')"
+RUN R -e "BiocManager::install('DESeq2')"
+
+## veupathdb projects ##
+
+# Additional GUS repo checkouts
+ARG APICOMMONDATA_COMMIT_HASH=d317f96aa65a0a19f86fdb6dd0fd67c803637166 \
+    CLINEPIDATA_GIT_COMMIT_SHA=8d31ba1b5cf7f6b022058b7c89e8e3ab0665f543 \
+    EDA_NEXTFLOW_GIT_COMMIT_SHA=f113cca94b9d16695dc4ac721de211d72e7c396f
+COPY bin/buildGus.bash /usr/bin/buildGus.bash
+RUN /usr/bin/buildGus.bash
 
 ARG LIB_VDI_PLUGIN_STUDY_GIT_REF="ee4853748fcdd5d7d8675eb0eb3828ea11da8f42"
 RUN git clone https://github.com/VEuPathDB/lib-vdi-plugin-study.git \
@@ -27,68 +71,30 @@ RUN git clone https://github.com/VEuPathDB/lib-vdi-plugin-study.git \
     && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
     && cp bin/* /opt/veupathdb/bin
 
-# Additional GUS repo checkouts
-ARG APICOMMONDATA_COMMIT_HASH=d317f96aa65a0a19f86fdb6dd0fd67c803637166 \
-    CLINEPIDATA_GIT_COMMIT_SHA=8d31ba1b5cf7f6b022058b7c89e8e3ab0665f543 \
-    EDA_NEXTFLOW_GIT_COMMIT_SHA=f113cca94b9d16695dc4ac721de211d72e7c396f
-COPY bin/buildGus.bash /usr/bin/buildGus.bash
-RUN /usr/bin/buildGus.bash
-
-# Install vdi plugin HTTP server
-ARG PLUGIN_SERVER_VERSION="v8.1.3"
-RUN set -o pipefail \
-    && curl "https://github.com/VEuPathDB/vdi-plugin-handler-server/releases/download/${PLUGIN_SERVER_VERSION}/docker-download.sh" -Lf --no-progress-meter | bash
-
-## base R ##
-
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
-ENV CRAN="https://cloud.r-project.org"
-
-# Base image Ubuntu 24.10 is "oracular" but we need to use 24.04 "noble"
-# because there are no R packages for non-LTS Ubuntu versions
-ARG UBUNTU_CODENAME_FOR_R=noble
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    software-properties-common \
-    dirmngr \
-    curl \
-    ca-certificates \
-    gnupg \
-    libxml2-dev libcurl4-openssl-dev libssl-dev libglpk-dev \
-    libfreetype6-dev libfontconfig1-dev libharfbuzz-dev libfribidi-dev \
-    libpng-dev libtiff5-dev libjpeg-dev \
-    && curl -fsSL ${CRAN}/bin/linux/ubuntu/marutter_pubkey.asc | gpg --dearmor -o /usr/share/keyrings/cran-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/cran-archive-keyring.gpg] ${CRAN}/bin/linux/ubuntu ${UBUNTU_CODENAME_FOR_R}-cran40/" > /etc/apt/sources.list.d/cran.list \
-    && apt-get update \
-    && apt-get install -y r-base r-base-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-## study-wrangler and dependencies ##
-
-# Install Tidyverse from CRAN
-RUN R -e "install.packages(c('tidyverse', 'skimr', 'remotes', 'BiocManager', 'devtools'))"
-
-# plot.data dependencies not automatically installed:
-RUN R -e "BiocManager::install('SummarizedExperiment')"
-RUN R -e "BiocManager::install('DESeq2')"
+## study-wrangler and veupathdb R dependencies ##
 
 ARG VEUPATHUTILS_GIT_REF="v2.7.0"
 RUN R -e "remotes::install_github('VEuPathDB/veupathUtils', '${VEUPATHUTILS_GIT_REF}', upgrade_dependencies=F)"
+
 # plot.data needed for binWidth function
 ARG PLOT_DATA_GIT_REF="v5.4.2"
 RUN R -e "remotes::install_github('VEuPathDB/plot.data', '${PLOT_DATA_GIT_REF}', upgrade_dependencies=F)"
+
 # and finally the wrangler itself
 ARG STUDY_WRANGLER_GIT_REF="v1.0.8"
 RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_GIT_REF}', upgrade_dependencies=F)"
 
+
+# Install vdi plugin HTTP server
+ARG PLUGIN_SERVER_VERSION="v8.1.3"
+RUN set -o pipefail \
+    && curl  -Lf --no-progress-meter \
+      "https://github.com/VEuPathDB/vdi-plugin-handler-server/releases/download/${PLUGIN_SERVER_VERSION}/docker-download.sh" \
+    | bash
+
 # scripts and paths
 
-COPY bin /opt/veupathdb/bin/
-COPY lib /opt/veupathdb/lib/
-COPY tests /opt/veupathdb/tests/
+COPY ./ /opt/veupathdb/
 ENV PATH="$PATH:/opt/veupathdb/bin"
 
 CMD ["run-plugin.sh"]
