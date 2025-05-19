@@ -86,7 +86,7 @@ RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_
 
 
 # Install vdi plugin HTTP server
-ARG PLUGIN_SERVER_VERSION="v8.1.3"
+ARG PLUGIN_SERVER_VERSION=v8.2.0-beta.4
 RUN set -o pipefail \
     && curl  -Lf --no-progress-meter \
       "https://github.com/VEuPathDB/vdi-plugin-handler-server/releases/download/${PLUGIN_SERVER_VERSION}/docker-download.sh" \
