@@ -1,0 +1,25 @@
+name: Update Plugin Server
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+
+jobs:
+  update-plugin-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Update Version
+        run: sed -i "s/ARG PLUGIN_SERVER_VERSION.+/ARG PLUGIN_SERVER_VERSION=${{ inputs.tag }}"
+      - name: Create PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: Update plugin server to version ${{ inputs.tag }}
+          sign-commits: true
+          body: Update plugin server to version ${{ inputs.tag }}
+          title: Plugin Server ${{ inputs.tag }}
+          reviewers: Foxcapades
+
