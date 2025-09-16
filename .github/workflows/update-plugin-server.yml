@@ -6,14 +6,19 @@ on:
       tag:
         required: true
         type: string
+      plugin:
+        required: true
+        type: string
 
 jobs:
   update-plugin-server:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          repository: VEuPathDB/vdi-plugin-${{ inputs.plugin }}
       - name: Update Version
-        run: sed -i "s/ARG PLUGIN_SERVER_VERSION.+/ARG PLUGIN_SERVER_VERSION=${{ inputs.tag }}"
+        run: sed -i "s/ARG PLUGIN_SERVER_VERSION.+/ARG PLUGIN_SERVER_VERSION=${{ inputs.tag }}/" Dockerfile
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
         with:
