@@ -18,7 +18,7 @@ jobs:
         with:
           repository: VEuPathDB/vdi-plugin-${{ inputs.plugin }}
       - name: Update Version
-        run: sed -i "s/ARG PLUGIN_SERVER_VERSION.+/ARG PLUGIN_SERVER_VERSION=${{ inputs.tag }}/" Dockerfile
+        run: sed -i "s/ARG PLUGIN_SERVER_VERSION.\+/ARG PLUGIN_SERVER_VERSION=${{ inputs.tag }}/" Dockerfile
       - name: Create PR
         uses: peter-evans/create-pull-request@v7
         with:
