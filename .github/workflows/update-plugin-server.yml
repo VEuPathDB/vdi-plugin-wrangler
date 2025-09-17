@@ -9,9 +9,6 @@ on:
       plugin:
         required: true
         type: string
-      token:
-        required: true
-        type: string
 
 jobs:
   update-plugin-server:
@@ -33,5 +30,4 @@ jobs:
           body: Update plugin server to version ${{ inputs.tag }}
           title: Plugin Server ${{ inputs.tag }}
           reviewers: Foxcapades
-          token:  ${{ inputs.token }}
-
+          token:  ${{ secrets.VDI_BUILD_TREE_TOKEN }}
