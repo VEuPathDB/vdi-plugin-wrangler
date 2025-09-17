@@ -86,7 +86,7 @@ RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_
 
 
 # VDI PLUGIN SERVER
-ARG PLUGIN_SERVER_VERSION=v1.7.0-b.11
+ARG PLUGIN_SERVER_VERSION=v1.7.0-a.8
 RUN curl "https://github.com/VEuPathDB/vdi-service/releases/download/${PLUGIN_SERVER_VERSION}/plugin-server.tar.gz" -Lf --no-progress-meter | tar -xz
 
 # scripts and paths
