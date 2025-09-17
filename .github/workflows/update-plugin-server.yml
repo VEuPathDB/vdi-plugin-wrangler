@@ -29,5 +29,4 @@ jobs:
           sign-commits: true
           body: Update plugin server to version ${{ inputs.tag }}
           title: Plugin Server ${{ inputs.tag }}
-          reviewers: Foxcapades
           token:  ${{ secrets.VDI_BUILD_TREE_TOKEN }}
