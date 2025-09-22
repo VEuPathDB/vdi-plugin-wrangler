@@ -1,4 +1,4 @@
-FROM veupathdb/gus-apidb-base:1.2.7
+FROM veupathdb/gus-apidb-base:1.2.10
 
 ENV JVM_MEM_ARGS="-Xms16m -Xmx64m" \
     JVM_ARGS="" \
@@ -30,10 +30,6 @@ RUN apt-get update \
 ## base R ##
 
 ARG CRAN="https://cloud.r-project.org"
-
-# Base image Ubuntu 24.10 is "oracular" but we need to use 24.04 "noble"
-# because there are no R packages for non-LTS Ubuntu versions
-ARG UBUNTU_CODENAME_FOR_R=noble
 
 # Install R Base
 RUN curl -fsSL ${CRAN}/bin/linux/ubuntu/marutter_pubkey.asc \
