@@ -27,15 +27,7 @@ RUN apt-get update \
     && cp /usr/share/zoneinfo/America/New_York /etc/localtime \
     && echo ${TZ} > /etc/timezone
 
-## base R ##
-
-ARG CRAN="https://cloud.r-project.org"
-
-# Install R Base
-RUN curl -fsSL ${CRAN}/bin/linux/ubuntu/marutter_pubkey.asc \
-    | gpg --dearmor -o /usr/share/keyrings/cran-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/cran-archive-keyring.gpg] ${CRAN}/bin/linux/ubuntu ${UBUNTU_CODENAME_FOR_R}-cran40/" > /etc/apt/sources.list.d/cran.list \
-    && apt-get update \
+RUN apt-get update \
     && apt-get install -y r-base r-base-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
