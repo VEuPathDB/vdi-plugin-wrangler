@@ -31,3 +31,4 @@ jobs:
           title: Plugin Server ${{ inputs.tag }}
           token:  ${{ secrets.VDI_BUILD_TREE_TOKEN }}
           author: 'VDI[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          assignees: Foxcapades
