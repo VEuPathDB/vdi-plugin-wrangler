@@ -160,18 +160,20 @@ for (category in categories) {
   }
 }
 
-# Report timings after all tests complete
-cat("\n")
-cat("════════════════════════════════════════════════════════════════════════════\n")
-cat("Test Timings\n")
-cat("════════════════════════════════════════════════════════════════════════════\n")
+# Report timings after all tests complete and testthat has finished its output
+withr::defer({
+  cat("\n")
+  cat("════════════════════════════════════════════════════════════════════════════\n")
+  cat("Test Timings\n")
+  cat("════════════════════════════════════════════════════════════════════════════\n")
 
-# Sort by elapsed time (descending)
-sorted_timings <- test_timings[order(unlist(test_timings), decreasing = TRUE)]
+  # Sort by elapsed time (descending)
+  sorted_timings <- test_timings[order(unlist(test_timings), decreasing = TRUE)]
 
-for (test_name in names(sorted_timings)) {
-  elapsed <- sorted_timings[[test_name]]
-  cat(sprintf("  %-50s %6.2fs\n", test_name, elapsed))
-}
+  for (test_name in names(sorted_timings)) {
+    elapsed <- sorted_timings[[test_name]]
+    cat(sprintf("  %-50s %6.2fs\n", test_name, elapsed))
+  }
 
-cat("════════════════════════════════════════════════════════════════════════════\n")
+  cat("════════════════════════════════════════════════════════════════════════════\n")
+}, envir = globalenv())
