@@ -1,10 +1,16 @@
 IMAGE_NAME := $(shell grep 'name:' Jenkinsfile | sed "s/.\+'\(.\+\)'.\+/\1/g")
 
+.PHONY: default build test start stop shell logs check-running
+
 default:
 	@echo "Usage:"
 	@echo "  make build"
 	@echo
 	@echo "    Builds the docker image for local use."
+	@echo
+	@echo "  make test"
+	@echo
+	@echo "    Runs the test suite in a new container (no running container needed)."
 	@echo
 	@echo "  make start"
 	@echo
@@ -25,14 +31,22 @@ default:
 build:
 	@docker compose build
 
+test:
+	@docker compose run --rm -w /opt/veupathdb plugin bin/run_tests.R
+
 start:
 	@docker compose up -d
 
 stop:
 	@docker compose down -v
 
-shell:
+check-running:
+	@docker ps --filter "name=$(IMAGE_NAME)-plugin-1" --format '{{.Names}}' | grep -q $(IMAGE_NAME)-plugin-1 || \
+		(echo "Error: Container '$(IMAGE_NAME)-plugin-1' is not running." && \
+		 echo "Start it with: make start" && exit 1)
+
+shell: check-running
 	@docker exec -it $(IMAGE_NAME)-plugin-1 bash
 
-logs:
+logs: check-running
 	@docker logs -f $(IMAGE_NAME)-plugin-1

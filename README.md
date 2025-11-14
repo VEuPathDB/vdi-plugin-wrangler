@@ -15,6 +15,10 @@ ORACLE_BASE_DN
 Nothing else should need changing, for now at least. The database
 connections are not yet in use.
 
+### VDI Plugin Server Config
+
+The VDI plugin server requires a configuration file at `/etc/vdi/config.yml` inside the container. A minimal configuration file is provided at `config/local-dev-config.yml` and is automatically mounted by `docker-compose.override.yml`. This config defines the wrangler plugin's data types and basic server settings without requiring the full VDI infrastructure.
+
 
 ### `tests` directory permissions
 
@@ -64,33 +68,39 @@ import /datasets/build-65/inputs/my-cool-dataset /datasets/build-65/outputs/my-c
 
 ## Developing with the container
 
-Create a file `docker-compose.override.yml` with the following
+A `docker-compose.override.yml` file is provided with the following volume mounts:
 
 ```
 services:
   plugin:
     volumes:
-      - ./bin:/opt/veupathdb/bin
-      - ./lib/R:/opt/veupathdb/lib/R
-      - ./tests:/opt/veupathdb/tests
+      - ./bin:/opt/veupathdb/bin  # Mount local bin directory
+      - ./lib/R:/opt/veupathdb/lib/R  # Mount local R code
+      - ./tests:/opt/veupathdb/tests # and the test data
+      - ./config/local-dev-config.yml:/etc/vdi/config.yml  # Mount VDI server config
 ```
-so that you can work on the code and tests without rebuilding/restarting the container.
 
-You can add further paths as required.
+This allows you to work on the code and tests without rebuilding/restarting the container. You can add further volume mounts as required.
 
 ## Running the import tests
 
-In the container shell:
+The easiest way to run tests:
+
+```
+make test
+```
+
+Or, in the container shell:
 
 ```
 cd /opt/veupathdb
 bin/run_tests.R
 ```
 
-Note that the tests (more detail below) only test that the import wrangling either
-a) completes without warnings or errors if none are expected, or b) throws an error if one is expected.
-
-**The tests do not currently check the output of the wrangler.**
+The tests validate that:
+- Wrangling either completes without warnings/errors (if expected to pass) or throws an error (if expected to fail)
+- For passing tests, the VDI export creates the expected output files (validates file count and presence of required base files)
+- Test timing is reported for performance tracking
 
 ## Adding a new category of wrangler
 
