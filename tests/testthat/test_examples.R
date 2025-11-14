@@ -21,6 +21,9 @@ if (!dir.exists(original_wd) || original_wd == "") {
   skip(glue::glue("Skipping all tests: ORIGINAL_WD ('{original_wd}') is not set or invalid."))
 }
 
+# Load error helpers (needed by all wrangler scripts)
+source(file.path(original_wd, "lib/R/error_helpers.R"))
+
 
 expect_clean <- function(code) {
   testthat::expect_no_error({
@@ -54,13 +57,22 @@ for (category in categories) {
       # meta.json file within the test data directory if you like
 
       test_expectation <- 'pass'
-     
+      expected_technical_error_regex <- NULL
+      expected_user_error_regex <- NULL
+
       meta_json_path <- file.path(example_dir, 'meta.json')
 
       if (file.exists(meta_json_path)) {
         metadata <- jsonlite::read_json(meta_json_path)
         if (!is.null(metadata$test_expectation)) {
           test_expectation <- metadata$test_expectation
+        }
+        # optionally read expected error patterns for failing tests
+        if (!is.null(metadata$expected_technical_error_regex)) {
+          expected_technical_error_regex <- metadata$expected_technical_error_regex
+        }
+        if (!is.null(metadata$expected_user_error_regex)) {
+          expected_user_error_regex <- metadata$expected_user_error_regex
         }
         # it's also possible to override the category
         if (!is.null(metadata$category)) {
@@ -94,11 +106,30 @@ for (category in categories) {
   
         # Determine study name as either $VDI_IMPORT_ID or the input directory path
         study_name <- Sys.getenv("VDI_IMPORT_ID", unset = example_dir)
-        
-        expect_function <- if (test_expectation == 'pass')
-	  expect_clean
-	else
-	  expect_error
+
+        expect_function <- if (test_expectation == 'pass') {
+          expect_clean
+        } else {
+          # For failing tests, capture STDOUT and validate both user and technical messages
+          function(code) {
+            # Capture STDOUT (user message)
+            stdout_output <- capture.output(
+              # Expect error for technical message (STDERR)
+              if (!is.null(expected_technical_error_regex)) {
+                expect_error(code, regexp = expected_technical_error_regex)
+              } else {
+                expect_error(code)
+              }
+            )
+
+            # Validate STDOUT contains user error message if pattern provided
+            if (!is.null(expected_user_error_regex)) {
+              stdout_text <- paste(stdout_output, collapse = "\n")
+              expect_match(stdout_text, expected_user_error_regex,
+                           info = paste0("User error message not found in STDOUT: ", stdout_text))
+            }
+          }
+        }
 
         # Time the test execution
         test_time <- system.time({
