@@ -32,6 +32,9 @@ expect_clean <- function(code) {
 
 ### TEST ALL THE DIFFERENT CATEGORIES (WRANGLER SCENARIOS) ###
 
+# Store test timings
+test_timings <- list()
+
 categories <- list.dirs(recursive = FALSE, full.names = FALSE)
 
 for (category in categories) {
@@ -96,19 +99,81 @@ for (category in categories) {
 	  expect_clean
 	else
 	  expect_error
-  
-        expect_function({
-          study <- wrangle(example_dir) %>% set_study_name(study_name)
-          if (study %>% validate()) {
-            tmp_dir <- tempfile("temp_output_")
-            dir.create(tmp_dir)
-            withr::defer(unlink(tmp_dir, recursive = TRUE))  # Ensure cleanup
-            study %>% export_to_vdi(tmp_dir)
-          } else {
-            stop(glue::glue("Validation of study failed for '{category}/{example}'"))
-          }
+
+        # Time the test execution
+        test_time <- system.time({
+          expect_function({
+            study <- wrangle(example_dir) %>% set_study_name(study_name)
+            if (study %>% validate()) {
+              tmp_dir <- tempfile("temp_output_")
+              dir.create(tmp_dir)
+              withr::defer(unlink(tmp_dir, recursive = TRUE))  # Ensure cleanup
+              study %>% export_to_vdi(tmp_dir)
+
+              # Validate output files (only for passing tests)
+              if (test_expectation == 'pass') {
+                # Get number of entities in the study
+                num_entities <- study %>% get_entities() %>% length()
+
+                # Count output files
+                output_files <- list.files(tmp_dir, full.names = FALSE)
+
+                # Calculate minimum expected files
+                # Base files: install.json, study.cache, entitytypegraph.cache (3 files)
+                # Per-entity files: ancestors, attributegraph, attributevalue (3 files per entity)
+                # Note: Actual count may be higher if entities have collections (+2 per entity with collections)
+                base_file_count <- 3
+                per_entity_files <- 3
+                min_expected_files <- base_file_count + (per_entity_files * num_entities)
+
+                # Validate file count
+                if (length(output_files) < min_expected_files) {
+                  stop(glue::glue(
+                    "VDI export validation failed for '{category}/{example}': ",
+                    "Expected at least {min_expected_files} files ",
+                    "({base_file_count} base + {per_entity_files} per entity × {num_entities} entities), ",
+                    "but found {length(output_files)}"
+                  ))
+                }
+
+                # Validate required base files exist
+                required_base_files <- c("install.json", "study.cache", "entitytypegraph.cache")
+                missing_files <- setdiff(required_base_files, output_files)
+                if (length(missing_files) > 0) {
+                  stop(glue::glue(
+                    "VDI export validation failed for '{category}/{example}': ",
+                    "Missing required base files: {paste(missing_files, collapse=', ')}"
+                  ))
+                }
+              }
+            } else {
+              stop(glue::glue("Validation of study failed for '{category}/{example}'"))
+            }
+          })
         })
+
+        # Store timing for this test
+        test_key <- glue::glue("{category}/{example}")
+        test_timings[[test_key]] <<- test_time["elapsed"]
       })
     })
   }
 }
+
+# Report timings after all tests complete and testthat has finished its output
+withr::defer({
+  cat("\n")
+  cat("════════════════════════════════════════════════════════════════════════════\n")
+  cat("Test Timings\n")
+  cat("════════════════════════════════════════════════════════════════════════════\n")
+
+  # Sort by elapsed time (descending)
+  sorted_timings <- test_timings[order(unlist(test_timings), decreasing = TRUE)]
+
+  for (test_name in names(sorted_timings)) {
+    elapsed <- sorted_timings[[test_name]]
+    cat(sprintf("  %-50s %6.2fs\n", test_name, elapsed))
+  }
+
+  cat("════════════════════════════════════════════════════════════════════════════\n")
+}, envir = globalenv())
