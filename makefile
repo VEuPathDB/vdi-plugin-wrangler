@@ -6,6 +6,10 @@ default:
 	@echo
 	@echo "    Builds the docker image for local use."
 	@echo
+	@echo "  make test"
+	@echo
+	@echo "    Runs the test suite in a new container (no running container needed)."
+	@echo
 	@echo "  make start"
 	@echo
 	@echo "    Starts the project's docker image as a background container."
@@ -24,6 +28,9 @@ default:
 
 build:
 	@docker compose build
+
+test:
+	@docker compose run --rm -w /opt/veupathdb plugin bin/run_tests.R
 
 start:
 	@docker compose up -d
