@@ -25,6 +25,13 @@ wrangle <- function(input_dir) {
 
   # assume first column is the gene ID column
   id_column_names <- id_column_metadata %>% pull(variable)
+
+  if (length(id_column_names) == 0) {
+    stop(paste("wrangle-phenotype.R ERROR: No ID column detected in:", input_file,
+               "\nThis usually means the 'geneID' column has duplicate values.",
+               "\nEach row must have a unique geneID."))
+  }
+
   gene_id_column <- id_column_names[1]
 
   if (gene_id_column != "geneID") {
