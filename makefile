@@ -1,5 +1,7 @@
 IMAGE_NAME := $(shell grep 'name:' Jenkinsfile | sed "s/.\+'\(.\+\)'.\+/\1/g")
 
+.PHONY: default build test start stop shell logs check-running
+
 default:
 	@echo "Usage:"
 	@echo "  make build"
@@ -38,8 +40,13 @@ start:
 stop:
 	@docker compose down -v
 
-shell:
+check-running:
+	@docker ps --filter "name=$(IMAGE_NAME)-plugin-1" --format '{{.Names}}' | grep -q $(IMAGE_NAME)-plugin-1 || \
+		(echo "Error: Container '$(IMAGE_NAME)-plugin-1' is not running." && \
+		 echo "Start it with: make start" && exit 1)
+
+shell: check-running
 	@docker exec -it $(IMAGE_NAME)-plugin-1 bash
 
-logs:
+logs: check-running
 	@docker logs -f $(IMAGE_NAME)-plugin-1
