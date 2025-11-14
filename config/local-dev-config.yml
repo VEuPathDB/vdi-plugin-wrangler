@@ -1,0 +1,45 @@
+$schema: https://veupathdb.github.io/vdi-service/schema/config/full-config.json
+
+# Minimal config for standalone wrangler plugin development
+# This config allows the plugin server to start without requiring
+# the full VDI stack infrastructure
+
+definitions:
+  genomicsProjects: &genomicsProjects
+  - PlasmoDB
+  - VEuPathDB
+
+containerCore:
+  http:
+    bindPort: 80
+    enableCors: true
+  authentication:
+    adminToken: ${env:ADMIN_AUTH_TOKEN:-test-admin-token}
+    oauth:
+      clientId: ${env:OAUTH_CLIENT_ID:-test-client-id}
+      clientSecret: ${env:OAUTH_CLIENT_SECRET:-test-client-secret}
+      url: https://eupathdb.org/oauth
+
+vdi:
+  siteBuild: ${env:SITE_BUILD}
+
+  restService:
+    enableJerseyTrace: true
+
+  plugins:
+    wrangler:
+      server: localhost:80
+      dataTypes:
+      - name: phenotype
+        category: Phenotype
+        version: 1.0
+      projectIds: *genomicsProjects
+
+  # Minimal install target for testing
+  installTargets:
+  - targetName: PlasmoDB
+    enabled: false
+
+  daemons:
+    reconciler:
+      enabled: false

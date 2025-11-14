@@ -42,7 +42,17 @@ services:
       - ./bin:/opt/veupathdb/bin
       - ./lib/R:/opt/veupathdb/lib/R
       - ./tests:/opt/veupathdb/tests
+      - ./config/local-dev-config.yml:/etc/vdi/config.yml
 ```
+
+### VDI Plugin Server Configuration
+
+The VDI plugin server requires a configuration file at `/etc/vdi/config.yml`. A minimal config is provided at `config/local-dev-config.yml` with:
+- Basic HTTP and authentication settings
+- Wrangler plugin definition (phenotype data type)
+- Minimal install targets without requiring full VDI infrastructure
+
+This config is automatically mounted by `docker-compose.override.yml`.
 
 ### Environment Setup
 
