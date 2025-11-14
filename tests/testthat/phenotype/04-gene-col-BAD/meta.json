@@ -1,3 +1,5 @@
 {
-  "test_expectation": "fail"
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "'geneID' column not present or misnamed",
+  "expected_user_error_regex": "column named 'geneID'"
 }

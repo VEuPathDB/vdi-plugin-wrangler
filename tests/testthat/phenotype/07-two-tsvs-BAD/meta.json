@@ -1,3 +1,5 @@
 {
-  "test_expectation": "fail"
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "Too many txt/tsv/csv input files",
+  "expected_user_error_regex": "more than one data file"
 }

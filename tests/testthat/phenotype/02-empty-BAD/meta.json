@@ -1,3 +1,5 @@
 {
-  "test_expectation": "fail"
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "No txt/tsv/csv input file found",
+  "expected_user_error_regex": "No data file found"
 }

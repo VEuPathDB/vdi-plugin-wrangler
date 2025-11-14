@@ -1,3 +1,5 @@
 {
-  "test_expectation": "fail"
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "'gene' column was not identical to 'geneID'",
+  "expected_user_error_regex": "both 'geneID' and 'gene' columns"
 }

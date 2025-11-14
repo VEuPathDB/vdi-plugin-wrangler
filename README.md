@@ -17,7 +17,7 @@ connections are not yet in use.
 
 ### VDI Plugin Server Config
 
-The VDI plugin server requires a configuration file at `/etc/vdi/config.yml` inside the container. A minimal configuration file is provided at `config/local-dev-config.yml` and is automatically mounted by `docker-compose.override.yml`. This config defines the wrangler plugin's data types and basic server settings without requiring the full VDI infrastructure.
+The VDI plugin server requires a configuration file at `/etc/vdi/config.yml` inside the container. A minimal configuration file is provided at `config/local-dev-config.yml` and is automatically mounted by `docker-compose.override.yml`. This config defines the wrangler plugin's data types and basic server settings without requiring the full VDI infrastructure. Note that the OAuth-related env vars are not needed to run this container in isolation.
 
 
 ### `tests` directory permissions
@@ -100,6 +100,7 @@ bin/run_tests.R
 The tests validate that:
 - Wrangling either completes without warnings/errors (if expected to pass) or throws an error (if expected to fail)
 - For passing tests, the VDI export creates the expected output files (validates file count and presence of required base files)
+- For failing tests with regex patterns in meta.json, both user-facing and technical error messages match expected patterns
 - Test timing is reported for performance tracking
 
 ## Adding a new category of wrangler
@@ -135,20 +136,46 @@ directory with no data files in it) then place a file called
 
 If it is expected to pass, this file is not needed, or you can set the value to `"pass"`.
 
+#### Validating Error Messages
+
+For failing tests, you can (and should) validate that the expected error messages are shown to users. This helps prevent error message regressions. Add optional regex patterns to `meta.json`:
+
+```
+{
+  "test_expectation": "fail",
+  "expected_user_error_regex": "No data file found",
+  "expected_technical_error_regex": "No txt/tsv/csv input file found"
+}
+```
+
+- `expected_user_error_regex`: Pattern to match the user-friendly error message (sent to STDOUT, shown to users in VDI)
+- `expected_technical_error_regex`: Pattern to match the technical error message (sent to STDERR, written to logs)
+
+Both fields are optional, but recommended for failing tests to ensure error messages remain helpful and don't regress.
+
 ### Add wrangler script
 
 Create a file called `lib/R/wrangle-rnaseq.R` containing a function
 called `wrangle()` that takes an input directory returns a study. The
 study does not need `name` metadata. No need to load the
-`study.wrangler` package - `tidyverse` is available too.
+`study.wrangler` package - `tidyverse` is available too. Error helper
+functions are available (loaded by test framework and bin/wrangle.R).
 
 ```
 wrangle <- function(input_dir) {
   # find input file(s) in `input_dir`
-  # ...
+  input_files <- Sys.glob(paste0(input_dir, "/*.fastq"))
+
+  if (length(input_files) == 0) {
+    stop_validation_error(
+      user_msg = "No FASTQ files found in your upload.",
+      technical_msg = paste("No .fastq files found in:", input_dir),
+      file = input_dir
+    )
+  }
 
   # create entity(ies)
-  entity <- entity_from_file(input_file, name = "phenotype")
+  entity <- entity_from_file(input_files[1], name = "rnaseq")
 
   # perform extra checks for edge cases
   # and make modifications on the entity as needed
@@ -156,12 +183,30 @@ wrangle <- function(input_dir) {
 
   # validate
   if (entity %>% validate() == FALSE) {
-    stop("wrangle-rnaseq.R ERROR: entity does not validate.")
+    stop_transformation_error(
+      user_msg = "Data validation failed after processing. Please check that your data file is properly formatted.",
+      technical_msg = "Entity validation failed after transformation."
+    )
   }
 
   return(study_from_entities(entities = list(entity)))
 }
 ```
+
+#### Error Helper Functions
+
+Use these functions instead of `stop()` to provide better error messages to users:
+
+- `stop_validation_error(user_msg, technical_msg, file)` - For invalid input data (exit code 1)
+- `stop_transformation_error(user_msg, technical_msg, file)` - For processing failures (exit code 1)
+- `stop_incompatible_error(user_msg, technical_msg, file)` - For unsupported categories (exit code 2)
+- `stop_unexpected_error(user_msg, technical_msg, file)` - For internal errors (exit code 255)
+
+Each function:
+- Writes `user_msg` to STDOUT (shown to users in VDI)
+- Writes `technical_msg` to STDERR (logged for debugging)
+- Returns appropriate exit code to the system
+- Optional `file` parameter adds file path to technical logs
 
 ### Add documentation
 
