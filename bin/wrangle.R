@@ -5,6 +5,9 @@ suppressPackageStartupMessages({
   library(study.wrangler)
 })
 
+# Configure validation to use both baseline and EDA profiles
+set_config(validation.profiles = c("baseline", "eda"))
+
 # Get command-line arguments
 args <- commandArgs(trailingOnly = TRUE)
 
