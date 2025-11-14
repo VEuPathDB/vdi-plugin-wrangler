@@ -3,18 +3,18 @@
 #'
 #' @return a study object
 #'
-#' Expects only one *.txt or *.tsv file in input directory
+#' Expects only one *.txt, *.tsv, or *.csv file in input directory (case-insensitive)
 #'
 wrangle <- function(input_dir) {
   # check for one input file only
-  globs <- paste0(input_dir, "/*", c(".txt", ".tsv"))
+  globs <- paste0(input_dir, "/*", c(".txt", ".tsv", ".csv", ".TXT", ".TSV", ".CSV"))
   input_files <- Sys.glob(globs)
 
   if (length(input_files) > 1) {
-    stop("wrangle-phenotype.R ERROR: Too many txt/tsv input files.")
+    stop("wrangle-phenotype.R ERROR: Too many txt/tsv/csv input files.")
   }
   if (length(input_files) == 0) {
-    stop(paste("wrangle-phenotype.R ERROR: No txt/tsv input file found in:", input_dir))
+    stop(paste("wrangle-phenotype.R ERROR: No txt/tsv/csv input file found in:", input_dir))
   }
 
   input_file <- input_files[1]
