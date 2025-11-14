@@ -32,6 +32,9 @@ expect_clean <- function(code) {
 
 ### TEST ALL THE DIFFERENT CATEGORIES (WRANGLER SCENARIOS) ###
 
+# Store test timings
+test_timings <- list()
+
 categories <- list.dirs(recursive = FALSE, full.names = FALSE)
 
 for (category in categories) {
@@ -96,19 +99,42 @@ for (category in categories) {
 	  expect_clean
 	else
 	  expect_error
-  
-        expect_function({
-          study <- wrangle(example_dir) %>% set_study_name(study_name)
-          if (study %>% validate()) {
-            tmp_dir <- tempfile("temp_output_")
-            dir.create(tmp_dir)
-            withr::defer(unlink(tmp_dir, recursive = TRUE))  # Ensure cleanup
-            study %>% export_to_vdi(tmp_dir)
-          } else {
-            stop(glue::glue("Validation of study failed for '{category}/{example}'"))
-          }
+
+        # Time the test execution
+        test_time <- system.time({
+          expect_function({
+            study <- wrangle(example_dir) %>% set_study_name(study_name)
+            if (study %>% validate()) {
+              tmp_dir <- tempfile("temp_output_")
+              dir.create(tmp_dir)
+              withr::defer(unlink(tmp_dir, recursive = TRUE))  # Ensure cleanup
+              study %>% export_to_vdi(tmp_dir)
+            } else {
+              stop(glue::glue("Validation of study failed for '{category}/{example}'"))
+            }
+          })
         })
+
+        # Store timing for this test
+        test_key <- glue::glue("{category}/{example}")
+        test_timings[[test_key]] <<- test_time["elapsed"]
       })
     })
   }
 }
+
+# Report timings after all tests complete
+cat("\n")
+cat("════════════════════════════════════════════════════════════════════════════\n")
+cat("Test Timings\n")
+cat("════════════════════════════════════════════════════════════════════════════\n")
+
+# Sort by elapsed time (descending)
+sorted_timings <- test_timings[order(unlist(test_timings), decreasing = TRUE)]
+
+for (test_name in names(sorted_timings)) {
+  elapsed <- sorted_timings[[test_name]]
+  cat(sprintf("  %-50s %6.2fs\n", test_name, elapsed))
+}
+
+cat("════════════════════════════════════════════════════════════════════════════\n")
