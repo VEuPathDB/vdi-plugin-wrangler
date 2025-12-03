@@ -51,9 +51,9 @@ ARG APICOMMONDATA_COMMIT_HASH=d317f96aa65a0a19f86fdb6dd0fd67c803637166 \
 COPY bin/buildGus.bash /usr/bin/buildGus.bash
 RUN /usr/bin/buildGus.bash
 
-ARG LIB_VDI_PLUGIN_STUDY_GIT_REF="ee4853748fcdd5d7d8675eb0eb3828ea11da8f42"
-RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-study.git \
-    && cd vdi-lib-plugin-study \
+ARG LIB_VDI_PLUGIN_STUDY_GIT_REF="bf9773e864eb09b1013c4fbc9e0f6f73d8fa2f77"
+RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
+    && cd vdi-lib-plugin-eda \
     && git checkout ${LIB_VDI_PLUGIN_STUDY_GIT_REF} \
     && mkdir -p /opt/veupathdb/lib/perl /opt/veupathdb/bin \
     && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
