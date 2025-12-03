@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-# the import script does all the validation
-exit 0;
