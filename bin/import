@@ -16,6 +16,6 @@ cd /opt/veupathdb
 verifyDir "${INPUT_DIR}"  || exit $EXIT_CODE_UNEXPECTED_ERROR
 verifyDir "${OUTPUT_DIR}" || exit $EXIT_CODE_UNEXPECTED_ERROR
 
-# wrangle script will get `category` from meta.json
+# wrangle script will get `datatype` from meta.json
 Rscript bin/wrangle.R $INPUT_DIR $OUTPUT_DIR
 
