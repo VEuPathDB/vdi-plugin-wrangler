@@ -103,13 +103,13 @@ The tests validate that:
 - For failing tests with regex patterns in meta.json, both user-facing and technical error messages match expected patterns
 - Test timing is reported for performance tracking
 
-## Adding a new category of wrangler
+## Adding a new datatype of wrangler
 
 Let's call this 'rnaseq'
 
 ### Add test cases
 
-Make a directory for the category and then a numbered directory for the first test case
+Make a directory for the datatype and then a numbered directory for the first test case
 
 ```
 mkdir tests/testthat/rnaseq
@@ -144,19 +144,21 @@ For failing tests, you can (and should) validate that the expected error message
 {
   "test_expectation": "fail",
   "expected_user_error_regex": "No data file found",
-  "expected_technical_error_regex": "No txt/tsv/csv input file found"
+  "expected_technical_error_regex": "No txt/tsv/csv input file found",
+  "type": "rnaseq"
 }
 ```
 
 - `expected_user_error_regex`: Pattern to match the user-friendly error message (sent to STDOUT, shown to users in VDI)
 - `expected_technical_error_regex`: Pattern to match the technical error message (sent to STDERR, written to logs)
+- `type`: Override the datatype for testing (optional, defaults to the directory name)
 
-Both fields are optional, but recommended for failing tests to ensure error messages remain helpful and don't regress.
+These fields are optional, but error message patterns are recommended for failing tests to ensure error messages remain helpful and don't regress.
 
 ### Add wrangler script
 
 Create a file called `lib/R/wrangle-rnaseq.R` containing a function
-called `wrangle()` that takes an input directory returns a study. The
+called `wrangle()` that takes an input directory and returns a study. The
 study does not need `name` metadata. No need to load the
 `study.wrangler` package - `tidyverse` is available too. Error helper
 functions are available (loaded by test framework and bin/wrangle.R).
@@ -199,7 +201,7 @@ Use these functions instead of `stop()` to provide better error messages to user
 
 - `stop_validation_error(user_msg, technical_msg, file)` - For invalid input data (exit code 1)
 - `stop_transformation_error(user_msg, technical_msg, file)` - For processing failures (exit code 1)
-- `stop_incompatible_error(user_msg, technical_msg, file)` - For unsupported categories (exit code 2)
+- `stop_incompatible_error(user_msg, technical_msg, file)` - For unsupported datatypes (exit code 2)
 - `stop_unexpected_error(user_msg, technical_msg, file)` - For internal errors (exit code 255)
 
 Each function:
