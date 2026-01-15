@@ -85,7 +85,7 @@ wrangle <- function(input_dir) {
 
   # give the 'gene' column the stable_id that has been used elsewhere for phenotype datasets
   # e.g. in ApiCommonModel/Model/lib/wdk/model/records/geneTableQueries.xml
-  entity <- entity %>% set_variable_metadata('gene', display_name = 'Gene ID', stable_id = 'VAR_bdc8e679')
+  entity <- entity %>% set_variable_metadata('gene', display_name = 'Gene ID', stable_id = 'VEUPATHDB_GENE_ID')
 
   # check there's a number variable
   number_variables <- entity %>%
