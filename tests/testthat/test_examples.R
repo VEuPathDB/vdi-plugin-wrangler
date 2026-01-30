@@ -24,6 +24,8 @@ if (!dir.exists(original_wd) || original_wd == "") {
 # Load error helpers (needed by all wrangler scripts)
 source(file.path(original_wd, "lib/R/error_helpers.R"))
 
+# Configure validation to use both baseline and EDA profiles
+set_config(validation.profiles = c("baseline", "eda"))
 
 expect_clean <- function(code) {
   testthat::expect_no_error({
@@ -33,24 +35,24 @@ expect_clean <- function(code) {
   })
 }
 
-### TEST ALL THE DIFFERENT CATEGORIES (WRANGLER SCENARIOS) ###
+### TEST ALL THE DIFFERENT DATATYPES (WRANGLER SCENARIOS) ###
 
 # Store test timings
 test_timings <- list()
 
-categories <- list.dirs(recursive = FALSE, full.names = FALSE)
+datatypes <- list.dirs(recursive = FALSE, full.names = FALSE)
 
-for (category in categories) {
-  examples <- list.dirs(category, recursive = FALSE, full.names = FALSE)
+for (datatype in datatypes) {
+  examples <- list.dirs(datatype, recursive = FALSE, full.names = FALSE)
 
   # This sets the context in the testthat output, so we get pass/fail counts
-  # per category. The function is deprecated but let's use it while we can.
-  testthat::context(category)
+  # per datatype. The function is deprecated but let's use it while we can.
+  testthat::context(datatype)
 
   for (example in examples) {
-    test_that(glue::glue("Example '{category}/{example}' loads or fails as appropriate"), {
+    test_that(glue::glue("Example '{datatype}/{example}' loads or fails as appropriate"), {
 
-      example_dir <- file.path(category, example)
+      example_dir <- file.path(datatype, example)
 
       # Most tests we expect to complete without errors
       # however, you can set `"test_expectation": "fail"` in the
@@ -74,9 +76,9 @@ for (category in categories) {
         if (!is.null(metadata$expected_user_error_regex)) {
           expected_user_error_regex <- metadata$expected_user_error_regex
         }
-        # it's also possible to override the category
-        if (!is.null(metadata$category)) {
-          category <- metadata$category
+        # it's also possible to override the datatype
+        if (!is.null(metadata$type) && !is.null(metadata$type$name)) {
+          datatype <- metadata$type$name
         }
       }
 
@@ -86,10 +88,10 @@ for (category in categories) {
       }
 
       # Determine appropriate path to the script with the appropriate `wrangle()` function
-      script_path <- file.path(original_wd, "lib/R", paste0("wrangle-", category, ".R"))
+      script_path <- file.path(original_wd, "lib/R", paste0("wrangle-", datatype, ".R"))
 
       if (!file.exists(script_path)) {
-        skip(glue::glue("Skipping example '{example}': Bad category/missing script '{script_path}'"))
+        skip(glue::glue("Skipping example '{example}': Bad datatype/missing script '{script_path}'"))
         return() # from `test_that()` scope
       }
 
@@ -160,7 +162,7 @@ for (category in categories) {
                 # Validate file count
                 if (length(output_files) < min_expected_files) {
                   stop(glue::glue(
-                    "VDI export validation failed for '{category}/{example}': ",
+                    "VDI export validation failed for '{datatype}/{example}': ",
                     "Expected at least {min_expected_files} files ",
                     "({base_file_count} base + {per_entity_files} per entity × {num_entities} entities), ",
                     "but found {length(output_files)}"
@@ -172,19 +174,19 @@ for (category in categories) {
                 missing_files <- setdiff(required_base_files, output_files)
                 if (length(missing_files) > 0) {
                   stop(glue::glue(
-                    "VDI export validation failed for '{category}/{example}': ",
+                    "VDI export validation failed for '{datatype}/{example}': ",
                     "Missing required base files: {paste(missing_files, collapse=', ')}"
                   ))
                 }
               }
             } else {
-              stop(glue::glue("Validation of study failed for '{category}/{example}'"))
+              stop(glue::glue("Validation of study failed for '{datatype}/{example}'"))
             }
           })
         })
 
         # Store timing for this test
-        test_key <- glue::glue("{category}/{example}")
+        test_key <- glue::glue("{datatype}/{example}")
         test_timings[[test_key]] <<- test_time["elapsed"]
       })
     })

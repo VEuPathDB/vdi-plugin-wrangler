@@ -8,21 +8,25 @@ id_columns:
 
 variables:
   - variable: Number.of.animals
+    display_name: Number of animals
     provider_label:
       - Number of animals
     data_type: integer
     data_shape: continuous
   - variable: Owns.property
+    display_name: Owns property
     provider_label:
       - Owns property
     data_type: string
     data_shape: categorical
   - variable: Enrollment.date
+    display_name: Enrollment date
     provider_label:
       - Enrollment date
     data_type: date
     data_shape: continuous
   - variable: Construction.material
+    display_name: Construction material
     provider_label:
       - Construction material
     data_type: string

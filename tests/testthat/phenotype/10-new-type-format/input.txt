@@ -1,0 +1,3 @@
+geneID	var1	var2
+gene001	1.5	2.3
+gene002	3.1	4.2
