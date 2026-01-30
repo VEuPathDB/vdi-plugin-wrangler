@@ -97,7 +97,7 @@ The system is extensible via datatype-specific wrangler scripts:
 - Expects exactly one `.txt` or `.tsv` file
 - First column must be `geneID` (no duplicates allowed)
 - Must have at least one numeric column
-- Creates a `gene` variable column (copy of `geneID`) with stable_id `VAR_bdc8e679`
+- Creates a `gene` variable column (copy of `geneID`) with stable_id `VEUPATHDB_GENE_ID`
 - Demotes extra ID columns to regular variables
 
 **STF Wrangler** (`lib/R/wrangle-stf.R`):
