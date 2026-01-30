@@ -24,6 +24,8 @@ if (!dir.exists(original_wd) || original_wd == "") {
 # Load error helpers (needed by all wrangler scripts)
 source(file.path(original_wd, "lib/R/error_helpers.R"))
 
+# Configure validation to use both baseline and EDA profiles
+set_config(validation.profiles = c("baseline", "eda"))
 
 expect_clean <- function(code) {
   testthat::expect_no_error({
@@ -75,8 +77,8 @@ for (datatype in datatypes) {
           expected_user_error_regex <- metadata$expected_user_error_regex
         }
         # it's also possible to override the datatype
-        if (!is.null(metadata$type)) {
-          datatype <- metadata$type
+        if (!is.null(metadata$type) && !is.null(metadata$type$name)) {
+          datatype <- metadata$type$name
         }
       }
 

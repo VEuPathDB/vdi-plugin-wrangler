@@ -50,8 +50,8 @@ datatype <- "phenotype" # default
 meta_json_path <- file.path(input_dir, "meta.json")
 if (file.exists(meta_json_path)) {
   metadata <- jsonlite::read_json(meta_json_path)
-  if (!is.null(metadata$type)) {
-    datatype <- metadata$type
+  if (!is.null(metadata$type) && !is.null(metadata$type$name)) {
+    datatype <- metadata$type$name
   }
 } else {
   warning(paste0("WARNING: No metadata file found in: ", meta_json_path, "\nUsing default datatype: ", datatype), call. = FALSE)

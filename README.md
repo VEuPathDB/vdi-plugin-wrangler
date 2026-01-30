@@ -145,13 +145,16 @@ For failing tests, you can (and should) validate that the expected error message
   "test_expectation": "fail",
   "expected_user_error_regex": "No data file found",
   "expected_technical_error_regex": "No txt/tsv/csv input file found",
-  "type": "rnaseq"
+  "type": {
+    "name": "rnaseq",
+    "version": "1.0"
+  }
 }
 ```
 
 - `expected_user_error_regex`: Pattern to match the user-friendly error message (sent to STDOUT, shown to users in VDI)
 - `expected_technical_error_regex`: Pattern to match the technical error message (sent to STDERR, written to logs)
-- `type`: Override the datatype for testing (optional, defaults to the directory name)
+- `type`: Override the datatype for testing. Must be an object with `name` field (e.g., `{"name": "rnaseq", "version": "1.0"}`) (optional, defaults to the directory name)
 
 These fields are optional, but error message patterns are recommended for failing tests to ensure error messages remain helpful and don't regress.
 

@@ -135,7 +135,7 @@ Tests are organized by datatype in `tests/testthat/`:
 - `meta.json` can specify:
   - `"test_expectation": "fail"` - Test expects wrangling to fail
   - `"test_expectation": "pass"` - Test expects success (default)
-  - `"type": "<name>"` - Override datatype for testing
+  - `"type": {"name": "<name>", "version": "<version>"}` - Override datatype for testing (object with name and optional version)
 
 **Important**: Tests only verify that import completes or fails as expected - they do NOT validate output correctness.
 
