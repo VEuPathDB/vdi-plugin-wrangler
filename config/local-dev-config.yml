@@ -7,7 +7,7 @@ $schema: https://veupathdb.github.io/vdi-service/schema/config/full-config.json
 definitions:
   genomicsProjects: &genomicsProjects
   - PlasmoDB
-  - VEuPathDB
+  - UniDB
 
 containerCore:
   http:
@@ -33,7 +33,7 @@ vdi:
       - name: phenotype
         category: Phenotype
         version: 1.0
-      projectIds: *genomicsProjects
+        projectIds: *genomicsProjects
 
   # Minimal install target for testing
   installTargets:
