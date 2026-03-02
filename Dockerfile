@@ -38,10 +38,6 @@ RUN apt-get update \
 # Install Tidyverse from CRAN
 RUN R -e "install.packages(c('tidyverse', 'skimr', 'remotes', 'BiocManager', 'devtools'))"
 
-# plot.data dependencies not automatically installed:
-RUN R -e "BiocManager::install('SummarizedExperiment')"
-RUN R -e "BiocManager::install('DESeq2')"
-
 ## veupathdb projects ##
 
 # Additional GUS repo checkouts
@@ -59,7 +55,7 @@ RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
     && cp bin/* /opt/veupathdb/bin
 
-ARG STUDY_WRANGLER_GIT_REF="v1.0.29"
+ARG STUDY_WRANGLER_GIT_REF="v1.0.32"
 RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_GIT_REF}', upgrade_dependencies=F)"
 
 # VDI PLUGIN SERVER
