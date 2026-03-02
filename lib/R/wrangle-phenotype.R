@@ -87,6 +87,9 @@ wrangle <- function(input_dir) {
   # e.g. in ApiCommonModel/Model/lib/wdk/model/records/geneTableQueries.xml
   entity <- entity %>% set_variable_metadata('gene', display_name = 'Gene ID', stable_id = 'VEUPATHDB_GENE_ID')
 
+  # set default display names for any other variables that need it
+  entity <- entity %>% set_variable_display_names_from_provider_labels()
+
   # check there's a number variable
   number_variables <- entity %>%
     get_variable_metadata() %>%

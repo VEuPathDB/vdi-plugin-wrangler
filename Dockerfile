@@ -59,19 +59,8 @@ RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
     && cp bin/* /opt/veupathdb/bin
 
-## study-wrangler and veupathdb R dependencies ##
-
-ARG VEUPATHUTILS_GIT_REF="v2.7.0"
-RUN R -e "remotes::install_github('VEuPathDB/veupathUtils', '${VEUPATHUTILS_GIT_REF}', upgrade_dependencies=F)"
-
-# plot.data needed for binWidth function
-ARG PLOT_DATA_GIT_REF="v5.4.2"
-RUN R -e "remotes::install_github('VEuPathDB/plot.data', '${PLOT_DATA_GIT_REF}', upgrade_dependencies=F)"
-
-# and finally the wrangler itself
-ARG STUDY_WRANGLER_GIT_REF="v1.0.25"
+ARG STUDY_WRANGLER_GIT_REF="v1.0.29"
 RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_GIT_REF}', upgrade_dependencies=F)"
-
 
 # VDI PLUGIN SERVER
 ARG PLUGIN_SERVER_VERSION=v1.7.0-a41

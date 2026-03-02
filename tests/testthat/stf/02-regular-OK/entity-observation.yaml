@@ -14,26 +14,31 @@ id_columns:
 
 variables:
   - variable: Observation.date
+    display_name: Observation date
     provider_label:
       - Observation date
     data_type: date
     data_shape: continuous
   - variable: Height..cm.
+    display_name: Height (cm)
     provider_label:
       - Height (cm)
     data_type: integer
     data_shape: continuous
   - variable: Weight..kg.
+    display_name: Weight (kg)
     provider_label:
       - Weight (kg)
     data_type: integer
     data_shape: continuous
   - variable: MUAC..cm.
+    display_name: MUAC (cm)
     provider_label:
       - MUAC (cm)
     data_type: number
     data_shape: continuous
   - variable: Teeth.brushed.today
+    display_name: Teeth brushed today
     provider_label:
       - Teeth brushed today
     data_type: integer

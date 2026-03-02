@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a VDI (VEuPathDB Dataset Installer) plugin that uses the [Study Wrangler](https://github.com/VEuPathDB/study-wrangler) R package to process user-uploaded files into EDA-loadable assets. The plugin validates, transforms, and exports study data based on different data categories (e.g., phenotype, stf).
+This is a VDI (VEuPathDB Dataset Installer) plugin that uses the [Study Wrangler](https://github.com/VEuPathDB/study-wrangler) R package to process user-uploaded files into EDA-loadable assets. The plugin validates, transforms, and exports study data based on different data types (e.g., phenotype, stf).
 
 ## Development Environment
 
@@ -79,19 +79,19 @@ The plugin implements the VDI plugin interface with these key scripts:
 
 - **`bin/import`** - Main entry point for the import process. Validates directories and calls `bin/wrangle.R`
 - **`bin/wrangle.R`** - Core orchestrator that:
-  1. Reads `meta.json` to determine the data category
-  2. Loads the appropriate category-specific wrangler script (`lib/R/wrangle-<category>.R`)
+  1. Reads `meta.json` to determine the data type
+  2. Loads the appropriate datatype-specific wrangler script (`lib/R/wrangle-<datatype>.R`)
   3. Executes the `wrangle()` function
   4. Validates and exports the resulting study object to VDI format
 
-### Category-based Wrangling System
+### Datatype-based Wrangling System
 
-The system is extensible via category-specific wrangler scripts:
+The system is extensible via datatype-specific wrangler scripts:
 
-- Each category has its own wrangler in `lib/R/wrangle-<category>.R`
+- Each datatype has its own wrangler in `lib/R/wrangle-<datatype>.R`
 - Each wrangler must export a `wrangle(input_dir)` function that returns a study object
-- The category is determined from `meta.json` in the input directory (defaults to "phenotype")
-- Available categories: `phenotype`, `stf`
+- The datatype is determined from `meta.json` in the input directory (defaults to "phenotype")
+- Available datatypes: `phenotype`, `stf`
 
 **Phenotype Wrangler** (`lib/R/wrangle-phenotype.R`):
 - Expects exactly one `.txt` or `.tsv` file
@@ -125,31 +125,31 @@ cd /opt/veupathdb
 bin/run_tests.R
 ```
 
-Tests use `testthat` and run against example data in `tests/testthat/<category>/<test-name>/`.
+Tests use `testthat` and run against example data in `tests/testthat/<datatype>/<test-name>/`.
 
 ### Test Structure
 
-Tests are organized by category in `tests/testthat/`:
-- `tests/testthat/<category>/<numbered-test-name>/`
+Tests are organized by datatype in `tests/testthat/`:
+- `tests/testthat/<datatype>/<numbered-test-name>/`
 - Each test directory contains input files and optional `meta.json`
 - `meta.json` can specify:
   - `"test_expectation": "fail"` - Test expects wrangling to fail
   - `"test_expectation": "pass"` - Test expects success (default)
-  - `"category": "<name>"` - Override category for testing
+  - `"type": {"name": "<name>", "version": "<version>"}` - Override datatype for testing (object with name and optional version)
 
 **Important**: Tests only verify that import completes or fails as expected - they do NOT validate output correctness.
 
-### Adding a New Category
+### Adding a New Datatype
 
-1. Create test directories: `tests/testthat/<category>/<test-number-description>/`
+1. Create test directories: `tests/testthat/<datatype>/<test-number-description>/`
 2. Add input files (keep them small for fast testing)
-3. Create wrangler script: `lib/R/wrangle-<category>.R` with a `wrangle(input_dir)` function
+3. Create wrangler script: `lib/R/wrangle-<datatype>.R` with a `wrangle(input_dir)` function
 4. The `wrangle()` function must:
    - Find and process input files
    - Create entities using study.wrangler functions
    - Validate entities
    - Return a study object via `study_from_entities(entities = list(...))`
-5. Add format documentation in `doc/<category>.md` for outreach
+5. Add format documentation in `doc/<datatype>.md` for outreach
 
 ## Common Commands
 
@@ -175,7 +175,7 @@ Defined in `lib/includes.sh`:
 
 - `bin/import` - Bash entry point for VDI plugin
 - `bin/wrangle.R` - R orchestrator script
-- `lib/R/wrangle-*.R` - Category-specific wranglers
+- `lib/R/wrangle-*.R` - Datatype-specific wranglers
 - `lib/includes.sh` - Bash utilities and exit codes
 - `tests/testthat/test_examples.R` - Main test runner
 - `Dockerfile` - Container definition with all dependencies

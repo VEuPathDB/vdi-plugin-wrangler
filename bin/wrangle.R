@@ -42,31 +42,31 @@ if (!dir.exists(output_dir)) {
 }
 
 #
-# figure out the category
+# figure out the datatype
 #
 
 ### TO DO: handle default fallback better ###
-category <- "phenotype" # default
+datatype <- "phenotype" # default
 meta_json_path <- file.path(input_dir, "meta.json")
 if (file.exists(meta_json_path)) {
   metadata <- jsonlite::read_json(meta_json_path)
-  if (!is.null(metadata$category)) {
-    category <- metadata$category
+  if (!is.null(metadata$type) && !is.null(metadata$type$name)) {
+    datatype <- metadata$type$name
   }
 } else {
-  warning(paste0("WARNING: No metadata file found in: ", meta_json_path, "\nUsing default category: ", category), call. = FALSE)
+  warning(paste0("WARNING: No metadata file found in: ", meta_json_path, "\nUsing default datatype: ", datatype), call. = FALSE)
 }
 
 #
-# Construct the expected script path: /lib/R/wrangle-<CATEGORY>.R
+# Construct the expected script path: /lib/R/wrangle-<DATATYPE>.R
 #
-script_path <- file.path("lib/R", paste0("wrangle-", category, ".R"))
+script_path <- file.path("lib/R", paste0("wrangle-", datatype, ".R"))
 
 # Check if the script exists before sourcing
 if (!file.exists(script_path)) {
   stop_incompatible_error(
-    user_msg = paste("The data category '", category, "' is not supported by this plugin. Please check your data type.", sep = ""),
-    technical_msg = paste("Error: No wrangling script found for category:", category, "\nExpected:", script_path),
+    user_msg = paste("The data type '", datatype, "' is not supported by this plugin. Please check your data type.", sep = ""),
+    technical_msg = paste("Error: No wrangling script found for datatype:", datatype, "\nExpected:", script_path),
     file = script_path
   )
 }

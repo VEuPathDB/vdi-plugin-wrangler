@@ -11,19 +11,23 @@ id_columns:
 
 variables:
   - variable: Name
+    display_name: Name
     data_type: string
     data_shape: categorical
   - variable: Nickname
+    display_name: Nickname
     provider_label:
       - Nickname
     data_type: string
     data_shape: categorical
   - variable: Sex
+    display_name: Sex
     provider_label:
       - Sex
     data_type: string
     data_shape: categorical
   - variable: Family.Role
+    display_name: Family Role
     provider_label:
       - Family Role
     data_type: string
