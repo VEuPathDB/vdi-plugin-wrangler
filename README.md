@@ -202,9 +202,9 @@ wrangle <- function(input_dir) {
 
 Use these functions instead of `stop()` to provide better error messages to users:
 
-- `stop_validation_error(user_msg, technical_msg, file)` - For invalid input data (exit code 1)
-- `stop_transformation_error(user_msg, technical_msg, file)` - For processing failures (exit code 1)
-- `stop_incompatible_error(user_msg, technical_msg, file)` - For unsupported datatypes (exit code 2)
+- `stop_validation_error(user_msg, technical_msg, file)` - For invalid input data (exit code 99)
+- `stop_transformation_error(user_msg, technical_msg, file)` - For processing failures (exit code 2)
+- `stop_incompatible_error(user_msg, technical_msg, file)` - For unsupported datatypes (exit code 1)
 - `stop_unexpected_error(user_msg, technical_msg, file)` - For internal errors (exit code 255)
 
 Each function:

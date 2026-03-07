@@ -167,7 +167,8 @@ Rscript bin/wrangle.R <INPUT_DIR> <OUTPUT_DIR>
 ## Exit Codes
 
 Defined in `lib/includes.sh`:
-- `1` - Validation error or incompatibility
+- `99` - Validation error
+- `1` - Incompatibility error
 - `2` - Transformation error
 - `255` - Unexpected error
 
