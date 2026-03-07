@@ -79,7 +79,7 @@ The plugin implements the VDI plugin interface with these key scripts:
 
 - **`bin/import`** - Main entry point for the import process. Validates directories and calls `bin/wrangle.R`
 - **`bin/wrangle.R`** - Core orchestrator that:
-  1. Reads `meta.json` to determine the data type
+  1. Reads `vdi-meta.json` to determine the data type
   2. Loads the appropriate datatype-specific wrangler script (`lib/R/wrangle-<datatype>.R`)
   3. Executes the `wrangle()` function
   4. Validates and exports the resulting study object to VDI format
@@ -90,7 +90,7 @@ The system is extensible via datatype-specific wrangler scripts:
 
 - Each datatype has its own wrangler in `lib/R/wrangle-<datatype>.R`
 - Each wrangler must export a `wrangle(input_dir)` function that returns a study object
-- The datatype is determined from `meta.json` in the input directory (defaults to "phenotype")
+- The datatype is determined from `vdi-meta.json` in the input directory (defaults to "phenotype")
 - Available datatypes: `phenotype`, `stf`
 
 **Phenotype Wrangler** (`lib/R/wrangle-phenotype.R`):
@@ -131,8 +131,8 @@ Tests use `testthat` and run against example data in `tests/testthat/<datatype>/
 
 Tests are organized by datatype in `tests/testthat/`:
 - `tests/testthat/<datatype>/<numbered-test-name>/`
-- Each test directory contains input files and optional `meta.json`
-- `meta.json` can specify:
+- Each test directory contains input files and optional `vdi-meta.json`
+- `vdi-meta.json` can specify:
   - `"test_expectation": "fail"` - Test expects wrangling to fail
   - `"test_expectation": "pass"` - Test expects success (default)
   - `"type": {"name": "<name>", "version": "<version>"}` - Override datatype for testing (object with name and optional version)
