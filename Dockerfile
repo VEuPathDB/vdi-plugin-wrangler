@@ -67,4 +67,4 @@ RUN curl "https://github.com/VEuPathDB/vdi-service/releases/download/${PLUGIN_SE
 COPY ./ /opt/veupathdb/
 ENV PATH="$PATH:/opt/veupathdb/bin"
 
-CMD PLUGIN_ID=wrangler run-plugin.sh
+CMD PLUGIN_ID=wrangler /startup.sh
