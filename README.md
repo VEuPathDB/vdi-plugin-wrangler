@@ -100,7 +100,7 @@ bin/run_tests.R
 The tests validate that:
 - Wrangling either completes without warnings/errors (if expected to pass) or throws an error (if expected to fail)
 - For passing tests, the VDI export creates the expected output files (validates file count and presence of required base files)
-- For failing tests with regex patterns in meta.json, both user-facing and technical error messages match expected patterns
+- For failing tests with regex patterns in vdi-meta.json, both user-facing and technical error messages match expected patterns
 - Test timing is reported for performance tracking
 
 ## Adding a new datatype of wrangler
@@ -126,7 +126,7 @@ There are currently two types of test data
 
 If your test data is expected to fail the import stage (for example a
 directory with no data files in it) then place a file called
-`meta.json` inside the directory with the following contents:
+`vdi-meta.json` inside the directory with the following contents:
 
 ```
 {
@@ -138,7 +138,7 @@ If it is expected to pass, this file is not needed, or you can set the value to 
 
 #### Validating Error Messages
 
-For failing tests, you can (and should) validate that the expected error messages are shown to users. This helps prevent error message regressions. Add optional regex patterns to `meta.json`:
+For failing tests, you can (and should) validate that the expected error messages are shown to users. This helps prevent error message regressions. Add optional regex patterns to `vdi-meta.json`:
 
 ```
 {
@@ -202,9 +202,9 @@ wrangle <- function(input_dir) {
 
 Use these functions instead of `stop()` to provide better error messages to users:
 
-- `stop_validation_error(user_msg, technical_msg, file)` - For invalid input data (exit code 1)
-- `stop_transformation_error(user_msg, technical_msg, file)` - For processing failures (exit code 1)
-- `stop_incompatible_error(user_msg, technical_msg, file)` - For unsupported datatypes (exit code 2)
+- `stop_validation_error(user_msg, technical_msg, file)` - For invalid input data (exit code 99)
+- `stop_transformation_error(user_msg, technical_msg, file)` - For processing failures (exit code 2)
+- `stop_incompatible_error(user_msg, technical_msg, file)` - For unsupported datatypes (exit code 1)
 - `stop_unexpected_error(user_msg, technical_msg, file)` - For internal errors (exit code 255)
 
 Each function:
