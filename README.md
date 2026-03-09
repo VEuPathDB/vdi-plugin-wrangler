@@ -2,23 +2,6 @@
 
 This is a VDI plugin that uses the [Study Wrangler](https://github.com/VEuPathDB/study-wrangler) to process user-uploaded files into EDA-loadable assets.
 
-## Set-up
-
-Copy `example.env` to `.env` and ask colleagues (including Bob and
-Ellie) what to provide for these guys:
-
-```
-LDAP_SERVER
-ORACLE_BASE_DN
-```
-
-Nothing else should need changing, for now at least. The database
-connections are not yet in use.
-
-### VDI Plugin Server Config
-
-The VDI plugin server requires a configuration file at `/etc/vdi/config.yml` inside the container. A minimal configuration file is provided at `config/local-dev-config.yml` and is automatically mounted by `docker-compose.override.yml`. This config defines the wrangler plugin's data types and basic server settings without requiring the full VDI infrastructure. Note that the OAuth-related env vars are not needed to run this container in isolation.
-
 
 ### `tests` directory permissions
 
