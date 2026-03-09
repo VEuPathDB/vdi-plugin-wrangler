@@ -168,8 +168,8 @@ Rscript bin/wrangle.R <INPUT_DIR> <OUTPUT_DIR>
 
 Defined in `lib/includes.sh`:
 - `99` - Validation error
-- `1` - Incompatibility error
-- `2` - Transformation error
+- `99` - Incompatibility error
+- `99` - Transformation error
 - `255` - Unexpected error
 
 ## Key Files

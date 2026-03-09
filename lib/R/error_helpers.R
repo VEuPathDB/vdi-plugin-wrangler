@@ -8,14 +8,14 @@
 #'
 #' Error types map to exit codes defined in lib/includes.sh:
 #' - validation: EXIT_CODE_VALIDATION_ERROR=99
-#' - transformation: EXIT_CODE_TRANSFORMATION_ERROR=2
-#' - incompatible: EXIT_CODE_INCOMPATIBLE=1
+#' - transformation: EXIT_CODE_TRANSFORMATION_ERROR=99
+#' - incompatible: EXIT_CODE_INCOMPATIBLE=99
 #' - unexpected: EXIT_CODE_UNEXPECTED_ERROR=255
 
 # Define exit codes as constants
 EXIT_CODE_VALIDATION_ERROR <- 99
-EXIT_CODE_TRANSFORMATION_ERROR <- 2
-EXIT_CODE_INCOMPATIBLE <- 1
+EXIT_CODE_TRANSFORMATION_ERROR <- 99
+EXIT_CODE_INCOMPATIBLE <- 99
 EXIT_CODE_UNEXPECTED_ERROR <- 255
 
 #' Stop with a validation error
