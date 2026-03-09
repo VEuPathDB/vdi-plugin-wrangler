@@ -55,7 +55,7 @@ RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
     && cp bin/* /opt/veupathdb/bin
 
-ARG STUDY_WRANGLER_GIT_REF="v1.0.32"
+ARG STUDY_WRANGLER_GIT_REF="v1.0.34"
 RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_GIT_REF}', upgrade_dependencies=F)"
 
 # VDI PLUGIN SERVER
@@ -67,4 +67,4 @@ RUN curl "https://github.com/VEuPathDB/vdi-service/releases/download/${PLUGIN_SE
 COPY ./ /opt/veupathdb/
 ENV PATH="$PATH:/opt/veupathdb/bin"
 
-CMD PLUGIN_ID=wrangler run-plugin.sh
+CMD PLUGIN_ID=wrangler /startup.sh

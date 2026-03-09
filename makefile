@@ -12,21 +12,10 @@ default:
 	@echo
 	@echo "    Runs the test suite in a new container (no running container needed)."
 	@echo
-	@echo "  make start"
-	@echo
-	@echo "    Starts the project's docker image as a background container."
-	@echo
-	@echo "  make stop"
-	@echo
-	@echo "    Shuts down a running background container for this project."
-	@echo
 	@echo "  make shell"
 	@echo
 	@echo "    Opens a bash session in a running instance of this project's docker image."
 	@echo
-	@echo "  make logs"
-	@echo
-	@echo "    Attaches to the log output of a running instance of this project's docker image."
 
 build:
 	@docker compose build
@@ -34,19 +23,5 @@ build:
 test:
 	@docker compose run --rm -w /opt/veupathdb plugin bin/run_tests.R
 
-start:
-	@docker compose up -d
-
-stop:
-	@docker compose down -v
-
-check-running:
-	@docker ps --filter "name=$(IMAGE_NAME)-plugin-1" --format '{{.Names}}' | grep -q $(IMAGE_NAME)-plugin-1 || \
-		(echo "Error: Container '$(IMAGE_NAME)-plugin-1' is not running." && \
-		 echo "Start it with: make start" && exit 1)
-
-shell: check-running
-	@docker exec -it $(IMAGE_NAME)-plugin-1 bash
-
-logs: check-running
-	@docker logs -f $(IMAGE_NAME)-plugin-1
+shell:
+	@docker compose run --rm plugin bash

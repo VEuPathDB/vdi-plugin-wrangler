@@ -47,7 +47,7 @@ if (!dir.exists(output_dir)) {
 
 ### TO DO: handle default fallback better ###
 datatype <- "phenotype" # default
-meta_json_path <- file.path(input_dir, "meta.json")
+meta_json_path <- file.path(input_dir, "vdi-meta.json")
 if (file.exists(meta_json_path)) {
   metadata <- jsonlite::read_json(meta_json_path)
   if (!is.null(metadata$type) && !is.null(metadata$type$name)) {

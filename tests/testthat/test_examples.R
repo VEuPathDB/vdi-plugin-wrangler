@@ -56,13 +56,13 @@ for (datatype in datatypes) {
 
       # Most tests we expect to complete without errors
       # however, you can set `"test_expectation": "fail"` in the
-      # meta.json file within the test data directory if you like
+      # vdi-meta.json file within the test data directory if you like
 
       test_expectation <- 'pass'
       expected_technical_error_regex <- NULL
       expected_user_error_regex <- NULL
 
-      meta_json_path <- file.path(example_dir, 'meta.json')
+      meta_json_path <- file.path(example_dir, 'vdi-meta.json')
 
       if (file.exists(meta_json_path)) {
         metadata <- jsonlite::read_json(meta_json_path)

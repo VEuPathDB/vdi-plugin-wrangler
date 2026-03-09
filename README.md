@@ -2,23 +2,6 @@
 
 This is a VDI plugin that uses the [Study Wrangler](https://github.com/VEuPathDB/study-wrangler) to process user-uploaded files into EDA-loadable assets.
 
-## Set-up
-
-Copy `example.env` to `.env` and ask colleagues (including Bob and
-Ellie) what to provide for these guys:
-
-```
-LDAP_SERVER
-ORACLE_BASE_DN
-```
-
-Nothing else should need changing, for now at least. The database
-connections are not yet in use.
-
-### VDI Plugin Server Config
-
-The VDI plugin server requires a configuration file at `/etc/vdi/config.yml` inside the container. A minimal configuration file is provided at `config/local-dev-config.yml` and is automatically mounted by `docker-compose.override.yml`. This config defines the wrangler plugin's data types and basic server settings without requiring the full VDI infrastructure. Note that the OAuth-related env vars are not needed to run this container in isolation.
-
 
 ### `tests` directory permissions
 
@@ -53,8 +36,12 @@ You should create a directory `mount/build-65` before attempting to build the co
 # can take 30 minutes!
 make build
 
-# start the container (running a VDI server but you may not need to use it)
-make start
+#
+# start the container via vdi-compose-stack/dev/fully-local
+# (get OAUTH creds from Bob or Ellie)
+#
+#   make up SERVICES=plugin-wrangler
+#
 
 # get a shell 
 make shell
@@ -77,7 +64,6 @@ services:
       - ./bin:/opt/veupathdb/bin  # Mount local bin directory
       - ./lib/R:/opt/veupathdb/lib/R  # Mount local R code
       - ./tests:/opt/veupathdb/tests # and the test data
-      - ./config/local-dev-config.yml:/etc/vdi/config.yml  # Mount VDI server config
 ```
 
 This allows you to work on the code and tests without rebuilding/restarting the container. You can add further volume mounts as required.
@@ -100,7 +86,7 @@ bin/run_tests.R
 The tests validate that:
 - Wrangling either completes without warnings/errors (if expected to pass) or throws an error (if expected to fail)
 - For passing tests, the VDI export creates the expected output files (validates file count and presence of required base files)
-- For failing tests with regex patterns in meta.json, both user-facing and technical error messages match expected patterns
+- For failing tests with regex patterns in vdi-meta.json, both user-facing and technical error messages match expected patterns
 - Test timing is reported for performance tracking
 
 ## Adding a new datatype of wrangler
@@ -126,7 +112,7 @@ There are currently two types of test data
 
 If your test data is expected to fail the import stage (for example a
 directory with no data files in it) then place a file called
-`meta.json` inside the directory with the following contents:
+`vdi-meta.json` inside the directory with the following contents:
 
 ```
 {
@@ -138,7 +124,7 @@ If it is expected to pass, this file is not needed, or you can set the value to 
 
 #### Validating Error Messages
 
-For failing tests, you can (and should) validate that the expected error messages are shown to users. This helps prevent error message regressions. Add optional regex patterns to `meta.json`:
+For failing tests, you can (and should) validate that the expected error messages are shown to users. This helps prevent error message regressions. Add optional regex patterns to `vdi-meta.json`:
 
 ```
 {
@@ -202,9 +188,9 @@ wrangle <- function(input_dir) {
 
 Use these functions instead of `stop()` to provide better error messages to users:
 
-- `stop_validation_error(user_msg, technical_msg, file)` - For invalid input data (exit code 1)
-- `stop_transformation_error(user_msg, technical_msg, file)` - For processing failures (exit code 1)
-- `stop_incompatible_error(user_msg, technical_msg, file)` - For unsupported datatypes (exit code 2)
+- `stop_validation_error(user_msg, technical_msg, file)` - For invalid input data (exit code 99)
+- `stop_transformation_error(user_msg, technical_msg, file)` - For processing failures (exit code 99)
+- `stop_incompatible_error(user_msg, technical_msg, file)` - For unsupported datatypes (exit code 99)
 - `stop_unexpected_error(user_msg, technical_msg, file)` - For internal errors (exit code 255)
 
 Each function:
@@ -219,3 +205,18 @@ This should be enough information for outreach to make user-facing documentation
 
 e.g. see [the format documentation for phenotype](./doc/phenotype.md)
 
+### Actually running the plugin server
+
+This is probably not needed in order to 
+
+Use repo `vdi-compose-stack` and follow instructions in `dev/fully-local`
+
+Get OAUTH creds from Bob or Ellie.
+
+After building the repo from **this** directory with `make build`, do the following in `vdi-compose-stack/dev/fully-local`:
+
+```
+make up SERVICES=plugin-wrangler
+```
+
+It should find the locally built image and start it with the other things it needs.

@@ -42,26 +42,7 @@ services:
       - ./bin:/opt/veupathdb/bin
       - ./lib/R:/opt/veupathdb/lib/R
       - ./tests:/opt/veupathdb/tests
-      - ./config/local-dev-config.yml:/etc/vdi/config.yml
 ```
-
-### VDI Plugin Server Configuration
-
-The VDI plugin server requires a configuration file at `/etc/vdi/config.yml`. A minimal config is provided at `config/local-dev-config.yml` with:
-- Basic HTTP and authentication settings
-- Wrangler plugin definition (phenotype data type)
-- Minimal install targets without requiring full VDI infrastructure
-
-This config is automatically mounted by `docker-compose.override.yml`.
-
-### Environment Setup
-
-Copy `example.env` to `.env` and configure:
-- `LDAP_SERVER` and `ORACLE_BASE_DN` (ask colleagues)
-- `DATASET_INSTALL_ROOT=/datasets`
-- `SITE_BUILD=build-65`
-
-Create `mount/build-65` directory before building - it gets mounted as `/datasets` in the container.
 
 ### Test Directory Permissions
 
@@ -79,7 +60,7 @@ The plugin implements the VDI plugin interface with these key scripts:
 
 - **`bin/import`** - Main entry point for the import process. Validates directories and calls `bin/wrangle.R`
 - **`bin/wrangle.R`** - Core orchestrator that:
-  1. Reads `meta.json` to determine the data type
+  1. Reads `vdi-meta.json` to determine the data type
   2. Loads the appropriate datatype-specific wrangler script (`lib/R/wrangle-<datatype>.R`)
   3. Executes the `wrangle()` function
   4. Validates and exports the resulting study object to VDI format
@@ -90,7 +71,7 @@ The system is extensible via datatype-specific wrangler scripts:
 
 - Each datatype has its own wrangler in `lib/R/wrangle-<datatype>.R`
 - Each wrangler must export a `wrangle(input_dir)` function that returns a study object
-- The datatype is determined from `meta.json` in the input directory (defaults to "phenotype")
+- The datatype is determined from `vdi-meta.json` in the input directory (defaults to "phenotype")
 - Available datatypes: `phenotype`, `stf`
 
 **Phenotype Wrangler** (`lib/R/wrangle-phenotype.R`):
@@ -131,8 +112,8 @@ Tests use `testthat` and run against example data in `tests/testthat/<datatype>/
 
 Tests are organized by datatype in `tests/testthat/`:
 - `tests/testthat/<datatype>/<numbered-test-name>/`
-- Each test directory contains input files and optional `meta.json`
-- `meta.json` can specify:
+- Each test directory contains input files and optional `vdi-meta.json`
+- `vdi-meta.json` can specify:
   - `"test_expectation": "fail"` - Test expects wrangling to fail
   - `"test_expectation": "pass"` - Test expects success (default)
   - `"type": {"name": "<name>", "version": "<version>"}` - Override datatype for testing (object with name and optional version)
@@ -167,8 +148,9 @@ Rscript bin/wrangle.R <INPUT_DIR> <OUTPUT_DIR>
 ## Exit Codes
 
 Defined in `lib/includes.sh`:
-- `1` - Validation error or incompatibility
-- `2` - Transformation error
+- `99` - Validation error
+- `99` - Incompatibility error
+- `99` - Transformation error
 - `255` - Unexpected error
 
 ## Key Files
