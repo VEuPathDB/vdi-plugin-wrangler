@@ -53,8 +53,12 @@ You should create a directory `mount/build-65` before attempting to build the co
 # can take 30 minutes!
 make build
 
-# start the container (running a VDI server but you may not need to use it)
-make start
+#
+# start the container via vdi-compose-stack/dev/fully-local
+# (get OAUTH creds from Bob or Ellie)
+#
+#   make up SERVICES=plugin-wrangler
+#
 
 # get a shell 
 make shell
@@ -77,7 +81,6 @@ services:
       - ./bin:/opt/veupathdb/bin  # Mount local bin directory
       - ./lib/R:/opt/veupathdb/lib/R  # Mount local R code
       - ./tests:/opt/veupathdb/tests # and the test data
-      - ./config/local-dev-config.yml:/etc/vdi/config.yml  # Mount VDI server config
 ```
 
 This allows you to work on the code and tests without rebuilding/restarting the container. You can add further volume mounts as required.
@@ -219,3 +222,18 @@ This should be enough information for outreach to make user-facing documentation
 
 e.g. see [the format documentation for phenotype](./doc/phenotype.md)
 
+### Actually running the plugin server
+
+This is probably not needed in order to 
+
+Use repo `vdi-compose-stack` and follow instructions in `dev/fully-local`
+
+Get OAUTH creds from Bob or Ellie.
+
+After building the repo from **this** directory with `make build`, do the following in `vdi-compose-stack/dev/fully-local`:
+
+```
+make up SERVICES=plugin-wrangler
+```
+
+It should find the locally built image and start it with the other things it needs.
