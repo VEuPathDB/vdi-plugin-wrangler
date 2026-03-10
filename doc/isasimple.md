@@ -54,6 +54,12 @@ Columns named with common latitude/longitude keywords (e.g. `latitude`, `lat`, `
 
 This requires exactly one latitude column and one longitude column to be present. See [study-wrangler Entity-methods-eda.R](https://github.com/VEuPathDB/study-wrangler/blob/main/R/Entity-methods-eda.R) for full matching rules.
 
+## Value formatting requirements
+
+* Values must not contain newline characters — these cause issues in the application backend regardless of whether the CSV/TSV parser handles them correctly
+
+> **TODO:** Newline characters in values are not currently caught at wrangling time. Once [study-wrangler#67](https://github.com/VEuPathDB/study-wrangler/issues/67) is resolved, add a failing test case at `tests/testthat/isasimple/07-newline-in-value-BAD/`.
+
 ## No enforced size limits
 
 The wrangler does not enforce limits on:
