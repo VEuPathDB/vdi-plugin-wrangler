@@ -16,17 +16,11 @@ Development is done entirely within Docker containers:
 # Build the container (takes ~30 minutes)
 make build
 
-# Start the container
-make start
-
 # Get a shell inside the container
 make shell
 
-# View logs
-make logs
-
-# Stop the container
-make stop
+# Run something inside the container
+docker compose run --rm -w /opt/veupathdb bin/run_tests.R
 ```
 
 The working directory inside the container is `/opt/veupathdb`.
