@@ -114,6 +114,8 @@ Tests are organized by datatype in `tests/testthat/`:
 
 **Important**: Tests only verify that import completes or fails as expected - they do NOT validate output correctness.
 
+**Current count**: 48 passing tests.
+
 ### Adding a New Datatype
 
 1. Create test directories: `tests/testthat/<datatype>/<test-number-description>/`
