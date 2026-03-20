@@ -48,12 +48,7 @@ wrangle <- function(input_dir) {
   # Set display names from provider labels (original column names)
   entity <- entity %>% set_variable_display_names_from_provider_labels()
 
-  if (entity %>% validate() == FALSE) {
-    stop_transformation_error(
-      user_msg = "Data validation failed after processing. Please check that your data file is properly formatted.",
-      technical_msg = "Entity validation failed after transformation."
-    )
-  }
+  stop_if_entity_invalid(entity)
 
   return(study_from_entities(entities = list(entity)))
 }

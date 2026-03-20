@@ -1,0 +1,5 @@
+{
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "VALIDATION ERROR:",
+  "expected_user_error_regex": "every row has the same number of columns"
+}

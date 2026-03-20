@@ -1,0 +1,5 @@
+{
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "contains newline characters",
+  "expected_user_error_regex": "columns contain line breaks"
+}

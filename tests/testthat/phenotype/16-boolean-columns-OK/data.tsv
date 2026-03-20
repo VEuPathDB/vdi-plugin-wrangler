@@ -1,0 +1,5 @@
+geneID	uppercase_TF	titlecase_TF	lowercase_TF	short_TF	numeric_value
+gene1	TRUE	True	true	T	1.1
+gene2	FALSE	False	false	F	2.2
+gene3	TRUE	False	true	F	3.3
+gene4	FALSE	True	false	T	4.4

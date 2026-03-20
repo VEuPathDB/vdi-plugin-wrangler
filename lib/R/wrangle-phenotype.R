@@ -26,7 +26,16 @@ wrangle <- function(input_dir) {
   }
 
   input_file <- input_files[1]
-  entity <- entity_from_file(input_file, name = "phenotype")
+  entity <- tryCatch(
+    entity_from_file(input_file, name = "phenotype"),
+    error = function(e) {
+      stop_validation_error(
+        user_msg = "Your data file could not be parsed. Please check that it is a valid TSV or CSV file where every row has the same number of columns as the header (use empty values rather than omitting them).",
+        technical_msg = conditionMessage(e),
+        file = input_file
+      )
+    }
+  )
 
   # see how many ID columns were detected
   id_column_metadata <- entity %>% get_id_column_metadata()
@@ -102,12 +111,7 @@ wrangle <- function(input_dir) {
     )
   }
 
-  if (entity %>% validate() == FALSE) {
-    stop_transformation_error(
-      user_msg = "Data validation failed after processing. Please check that your data file is properly formatted.",
-      technical_msg = "Entity validation failed after transformation."
-    )
-  }
+  stop_if_entity_invalid(entity)
 
   return(study_from_entities(entities = list(entity)))
 }
