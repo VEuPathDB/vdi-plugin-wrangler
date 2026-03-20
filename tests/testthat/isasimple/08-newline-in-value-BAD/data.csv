@@ -1,0 +1,4 @@
+sample_id,measurement,description
+sample1,1.5,"this value contains a
+newline"
+sample2,2.3,normal value
