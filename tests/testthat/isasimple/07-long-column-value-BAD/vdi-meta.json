@@ -1,0 +1,5 @@
+{
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "Entity validation failed after transformation",
+  "expected_user_error_regex": "Data validation failed after processing"
+}
