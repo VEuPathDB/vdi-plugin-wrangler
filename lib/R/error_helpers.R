@@ -120,6 +120,46 @@ stop_incompatible_error <- function(user_msg, technical_msg = NULL, file = NULL)
   }
 }
 
+#' Validate an entity and stop with a transformation error if invalid
+#'
+#' Runs validate() twice on the failure path: once with format="upload" for the
+#' user-facing message (plain language, no R code) and once with format="full"
+#' for the technical log (includes R remediation hints).
+#' Does nothing if the entity is valid.
+#'
+#' @param entity An Entity object to validate
+stop_if_entity_invalid <- function(entity) {
+  upload_msgs <- character(0)
+  is_valid <- withCallingHandlers(
+    entity %>% validate(format = "upload"),
+    warning = function(w) {
+      upload_msgs <<- c(upload_msgs, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+
+  if (!is_valid) {
+    technical_msgs <- character(0)
+    withCallingHandlers(
+      entity %>% validate(),
+      warning = function(w) {
+        technical_msgs <<- c(technical_msgs, conditionMessage(w))
+        invokeRestart("muffleWarning")
+      }
+    )
+    stop_transformation_error(
+      user_msg = paste(
+        c("Your data could not be loaded into the database:", upload_msgs),
+        collapse = "\n\n"
+      ),
+      technical_msg = paste(
+        c("Entity validation failed:", technical_msgs),
+        collapse = "\n\n"
+      )
+    )
+  }
+}
+
 #' Stop with an unexpected error
 #'
 #' Use for truly unexpected errors that shouldn't happen under normal circumstances,

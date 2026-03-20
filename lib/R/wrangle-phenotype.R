@@ -111,12 +111,7 @@ wrangle <- function(input_dir) {
     )
   }
 
-  if (entity %>% validate() == FALSE) {
-    stop_transformation_error(
-      user_msg = "Data validation failed after processing. Please check that your data file is properly formatted.",
-      technical_msg = "Entity validation failed after transformation."
-    )
-  }
+  stop_if_entity_invalid(entity)
 
   return(study_from_entities(entities = list(entity)))
 }

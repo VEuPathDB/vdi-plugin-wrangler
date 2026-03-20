@@ -1,5 +1,5 @@
 {
   "test_expectation": "fail",
-  "expected_technical_error_regex": "Entity validation failed after transformation",
-  "expected_user_error_regex": "Data validation failed after processing"
+  "expected_technical_error_regex": "Entity validation failed:.*values up to [0-9]+ characters long",
+  "expected_user_error_regex": "columns contain values longer than [0-9]+ characters"
 }
