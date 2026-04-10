@@ -42,6 +42,11 @@ wrangle <- function(input_dir) {
   user_columns <- setdiff(names(entity@data), "entity_id")
   entity <- entity %>% redetect_columns_as_variables(user_columns)
 
+  # Preserve input column order in the visualization system
+  for (i in seq_along(user_columns)) {
+    entity <- entity %>% set_variable_metadata(user_columns[[i]], display_order = i)
+  }
+
   # Infer lat/lng variable metadata for EDA
   entity <- entity %>% infer_geo_variables_for_eda()
 
