@@ -144,7 +144,7 @@ if (file.exists(assert_path)) {
 4. The `wrangle()` function must:
    - Find and process input files
    - Create entities using study.wrangler functions
-   - Validate entities
+   - Optionally call `stop_if_entity_invalid(entity)` before assembling a study object — this surfaces entity-level problems as user-friendly validation errors rather than the generic fallback in `wrangle.R`
    - Return a study object via `study_from_entities(entities = list(...))`
 5. Add format documentation in `doc/<datatype>.md` for outreach
 
