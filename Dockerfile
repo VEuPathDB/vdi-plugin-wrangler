@@ -16,6 +16,7 @@ RUN perl -MCPAN -e 'install qq(Switch)' \
 RUN apt-get update \
     && apt-get install -y \
         ca-certificates curl \
+        cmake \
         dirmngr \
         gnupg \
         libxml2-dev libcurl4-openssl-dev libssl-dev libglpk-dev libjpeg-dev \
@@ -35,8 +36,130 @@ RUN apt-get update \
 
 ## non-veupathdb study-wrangler dependencies ##
 
-# Install Tidyverse from CRAN
-RUN R -e "install.packages(c('tidyverse', 'skimr', 'remotes', 'BiocManager', 'devtools'))"
+# Install R packages via apt (pre-compiled, much faster than CRAN)
+RUN apt-get update && apt-get install -y \
+        r-cran-abind \
+        r-cran-askpass \
+        r-cran-backports \
+        r-cran-base64enc \
+        r-cran-bh \
+        r-cran-biocmanager \
+        r-cran-bit \
+        r-cran-bit64 \
+        r-cran-bitops \
+        r-cran-blob \
+        r-cran-broom \
+        r-cran-bslib \
+        r-cran-cachem \
+        r-cran-callr \
+        r-cran-cellranger \
+        r-cran-cli \
+        r-cran-clipr \
+        r-cran-conflicted \
+        r-cran-cpp11 \
+        r-cran-crayon \
+        r-cran-curl \
+        r-cran-data.table \
+        r-cran-dbi \
+        r-cran-dbplyr \
+        r-cran-digest \
+        r-cran-dplyr \
+        r-cran-dtplyr \
+        r-cran-evaluate \
+        r-cran-farver \
+        r-cran-fastmap \
+        r-cran-fontawesome \
+        r-cran-forcats \
+        r-cran-formatr \
+        r-cran-fs \
+        r-cran-futile.logger \
+        r-cran-futile.options \
+        r-cran-gargle \
+        r-cran-generics \
+        r-cran-ggplot2 \
+        r-cran-glue \
+        r-cran-googledrive \
+        r-cran-googlesheets4 \
+        r-cran-gtable \
+        r-cran-haven \
+        r-cran-highr \
+        r-cran-hms \
+        r-cran-htmltools \
+        r-cran-httr \
+        r-cran-ids \
+        r-cran-igraph \
+        r-cran-isoband \
+        r-cran-jquerylib \
+        r-cran-jsonlite \
+        r-cran-knitr \
+        r-cran-labeling \
+        r-cran-lambda.r \
+        r-cran-lifecycle \
+        r-cran-locfit \
+        r-cran-lubridate \
+        r-cran-magrittr \
+        r-cran-matrixstats \
+        r-cran-memoise \
+        r-cran-mime \
+        r-cran-modelr \
+        r-cran-openssl \
+        r-cran-pillar \
+        r-cran-pkgconfig \
+        r-cran-prettyunits \
+        r-cran-processx \
+        r-cran-progress \
+        r-cran-ps \
+        r-cran-purrr \
+        r-cran-r6 \
+        r-cran-ragg \
+        r-cran-rappdirs \
+        r-cran-rcolorbrewer \
+        r-cran-rcpp \
+        r-cran-rcpparmadillo \
+        r-cran-rcppeigen \
+        r-cran-rcurl \
+        r-cran-readr \
+        r-cran-readxl \
+        r-cran-rematch \
+        r-cran-rematch2 \
+        r-cran-repr \
+        r-cran-reprex \
+        r-cran-rlang \
+        r-cran-rmarkdown \
+        r-cran-rstudioapi \
+        r-cran-rvest \
+        r-cran-sass \
+        r-cran-scales \
+        r-cran-selectr \
+        r-cran-skimr \
+        r-cran-snow \
+        r-cran-statmod \
+        r-cran-stringi \
+        r-cran-stringr \
+        r-cran-sys \
+        r-cran-systemfonts \
+        r-cran-textshaping \
+        r-cran-tibble \
+        r-cran-tidyr \
+        r-cran-tidyselect \
+        r-cran-tidyverse \
+        r-cran-timechange \
+        r-cran-tinytex \
+        r-cran-tzdb \
+        r-cran-utf8 \
+        r-cran-uuid \
+        r-cran-vctrs \
+        r-cran-viridislite \
+        r-cran-vroom \
+        r-cran-withr \
+        r-cran-xfun \
+        r-cran-xml2 \
+        r-cran-yaml \
+    && apt-get clean
+
+# Install remaining CRAN dependencies not available via apt, plus remotes
+# (apt version of remotes is too old to handle the 'huge=url' remote type)
+RUN R -e "install.packages(c('remotes', 'S7'))"
 
 ## veupathdb projects ##
 
