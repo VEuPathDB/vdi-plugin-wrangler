@@ -13,7 +13,7 @@ This is a VDI (VEuPathDB Dataset Installer) plugin that uses the [Study Wrangler
 Development is done entirely within Docker containers:
 
 ```bash
-# Build the container (takes ~30 minutes)
+# Build the container (takes ~45 minutes)
 make build
 
 # Get a shell inside the container
@@ -24,6 +24,14 @@ docker compose run --rm -w /opt/veupathdb bin/run_tests.R
 ```
 
 The working directory inside the container is `/opt/veupathdb`.
+
+### Build Time Notes
+
+The build is slow (~45 min) and dominated by the `remotes::install_github('VEuPathDB/study-wrangler', ...)` step (~42 min). This step compiles many R packages from CRAN source because the `study.wrangler` → `plot.data` → `veupathUtils` dependency chain requires newer versions than Ubuntu 24.04's apt packages ship.
+
+We pre-install R packages via apt (`r-cran-*`) to provide pre-compiled binaries, but most of them get upgraded to newer CRAN versions during the `install_github` step anyway. The heaviest compilation culprits are `igraph`, `RcppEigen`, `RcppArmadillo`, and `fs`. If build time becomes critical, the next lever would be a more up-to-date R base image (e.g. `rocker/r-ver`) rather than Ubuntu's apt packages.
+
+`devtools` was removed from the build — it was being installed unnecessarily. `remotes` (which is all that was needed for `install_github`) is installed from CRAN rather than apt because the apt version is too old to handle the `huge=url` remote type used by `veupathUtils`.
 
 ### Volume Mounting for Development
 
