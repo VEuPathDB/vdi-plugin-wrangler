@@ -157,6 +157,9 @@ RUN apt-get update && apt-get install -y \
         r-cran-yaml \
     && apt-get clean
 
+## don't upgrade already-installed R packages (if they are sufficient)
+ARG R_REMOTES_UPGRADE=never
+
 # Install remaining CRAN dependencies not available via apt, plus remotes
 # (apt version of remotes is too old to handle the 'huge=url' remote type)
 RUN R -e "install.packages(c('remotes', 'S7'))"
@@ -178,7 +181,7 @@ RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
     && cp bin/* /opt/veupathdb/bin
 
-ARG STUDY_WRANGLER_GIT_REF="v1.0.37"
+ARG STUDY_WRANGLER_GIT_REF="v1.0.38"
 RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_GIT_REF}', upgrade_dependencies=F)"
 
 # VDI PLUGIN SERVER
