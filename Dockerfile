@@ -87,7 +87,6 @@ RUN apt-get update && apt-get install -y \
         r-cran-htmltools \
         r-cran-httr \
         r-cran-ids \
-        r-cran-igraph \
         r-cran-isoband \
         r-cran-jquerylib \
         r-cran-jsonlite \
@@ -162,7 +161,8 @@ ARG R_REMOTES_UPGRADE=never
 
 # Install remaining CRAN dependencies not available via apt, plus remotes
 # (apt version of remotes is too old to handle the 'huge=url' remote type)
-RUN R -e "install.packages(c('remotes', 'S7'))"
+# (same with igraph - needs to be 2.x)
+RUN R -e "install.packages(c('remotes', 'S7', 'igraph'))"
 
 ## veupathdb projects ##
 
