@@ -111,6 +111,10 @@ wrangle <- function(input_dir) {
     )
   }
 
+  # must do this in case we have lat/long variables
+  # (because we are validating with the EDA profile)
+  entity <- entity %>% infer_geo_variables_for_eda()
+
   stop_if_entity_invalid(entity)
 
   return(study_from_entities(entities = list(entity)))
