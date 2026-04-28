@@ -1,0 +1,31 @@
+cheese_name	country	region	latitude	longitude	milk_type	texture	age_months	fat_content_pct	protected_designation	blue_veined	avg_price_eur_kg
+Parmigiano-Reggiano	Italy	Emilia-Romagna	44.70	10.64	cow	hard	24	32.0	yes	no	28.50
+Brie de Meaux	France	Île-de-France	48.85	2.97	cow	soft	0.5	27.0	yes	no	18.00
+Manchego	Spain	La Mancha	39.40	-3.00	sheep	hard	12	31.5	yes	no	22.00
+Gruyère	Switzerland	Fribourg	46.58	7.07	cow	hard	10	33.0	yes	no	24.50
+Stilton	England	East Midlands	52.64	-0.71	cow	semi-hard		31.0	yes	yes	19.00
+Feta	Greece	Epirus	39.67	20.85	sheep	soft	2		yes	no
+Camembert de Normandie	France	Normandy	48.88	0.19	cow	soft	0.75	24.0	yes	no	16.50
+Roquefort	France	Aveyron	43.97	2.99	sheep	soft	3	31.5	yes	yes	32.00
+Edam	Netherlands	North Holland	52.51	5.05	cow	semi-hard	4	26.5	no	no	9.50
+Emmental	Switzerland	Bern	46.96	7.77	cow	hard	4	31.0	no	no	14.00
+Cheddar	England	Somerset	51.28	-2.78	cow	hard	12	34.0	no	no	11.00
+Mozzarella di Bufala	Italy	Campania	40.86	14.27	buffalo	fresh	0.1	22.0	yes	no	18.50
+Halloumi	Cyprus		35.16	33.36	sheep	semi-hard	0.5	25.0	yes	no	12.00
+Gorgonzola	Italy	Lombardy	45.53	9.40	cow	soft	3	31.0	yes	yes	21.00
+Comté	France	Franche-Comté	47.27	5.99	cow	hard	8	33.5	yes	no	26.00
+Appenzeller	Switzerland	Appenzell	47.33	9.41	cow	hard	3	31.0	no	no
+Jarlsberg	Norway	Vestfold	59.91	10.75	cow	semi-hard	3	27.0	no	no	13.50
+Manchego Curado	Spain	La Mancha	39.40	-3.00	sheep	hard	6	31.5	no	no	19.00
+Pecorino Romano	Italy	Lazio	41.90	12.49	sheep	hard	8	36.0	yes	no	17.00
+Limburger	Belgium	Liège	50.64	5.57	cow	soft	2	29.0	no	no	10.00
+Époisses	France	Burgundy	47.39	4.68	cow	soft	2	27.0	yes	no
+Gouda	Netherlands	South Holland	52.01	4.71	cow	semi-hard	6	30.5	no	no	10.50
+Taleggio	Italy	Lombardy	45.80	9.82	cow	soft	1.5	26.0	yes	no	16.00
+Ossau-Iraty	France	Basque Country	43.19	-0.75	sheep	semi-hard	3	30.0	yes	no	22.50
+Abbaye de Belloc	France	Pays Basque	43.42	-1.18	sheep	hard			no	no
+Havarti	Denmark	Zealand	55.46	11.77	cow	semi-hard	3	29.0	no	no	11.50
+Tilsit	Germany	Bavaria	48.14	11.58	cow	semi-hard	5	30.0	no	no	9.00
+Queijo Serra da Estrela	Portugal	Beira Interior	40.35	-7.63	sheep	soft	1.5		yes	no	28.00
+Graviera	Greece	Crete	35.34	25.13	sheep	hard	5	33.0	yes	no	14.00
+Vacherin Mont-d'Or	Switzerland	Vaud	46.52	6.23	cow	soft	1		yes	no	19.50

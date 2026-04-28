@@ -30,11 +30,20 @@ wrangle <- function(input_dir) {
 
   # Add serial ID column before type inference so entity_from_file detects it as the entity ID.
   # provider_label for each column is set automatically to the column name by sync_variable_metadata.
-  entity <- entity_from_file(
-    input_file,
-    name = "record",
-    preprocess_fn = function(data) {
-      data %>% mutate(entity_id = sprintf("entity%06d", seq_len(nrow(data))), .before = 1)
+  entity <- tryCatch(
+    entity_from_file(
+      input_file,
+      name = "record",
+      preprocess_fn = function(data) {
+        data %>% mutate(entity_id = sprintf("entity%06d", seq_len(nrow(data))), .before = 1)
+      }
+    ),
+    error = function(e) {
+      stop_validation_error(
+        user_msg = "Your data file could not be parsed. Please check that it is a valid TSV or CSV file where every row has the same number of columns as the header (use empty values rather than omitting them).",
+        technical_msg = conditionMessage(e),
+        file = input_file
+      )
     }
   )
 

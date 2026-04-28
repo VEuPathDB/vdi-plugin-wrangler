@@ -1,0 +1,5 @@
+{
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "Issues were encountered while parsing the file",
+  "expected_user_error_regex": "could not be parsed"
+}
