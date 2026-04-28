@@ -1,0 +1,31 @@
+cheese_name	country	region	latitude	longitude	milk_type	texture	age_months	fat_content_pct	protected_designation	blue_veined	avg_price_eur_kg
+Parmigiano-Reggiano	Italy	Emilia-Romagna	44.7	10.64	cow	hard	24	32	yes	no	28.5
+Brie de Meaux	France	Ile-de-France	48.85	2.97	cow	soft	0.5	27	yes	no	18
+Manchego	Spain	La Mancha	39.4	-3	sheep	hard	12	31.5	yes	no	22
+Gruyere	Switzerland	Fribourg	46.58	7.07	cow	hard	10	33	yes	no	24.5
+Stilton	England	East Midlands	52.64	-0.71	cow	semi-hard		31	yes	yes	19
+Feta	Greece	Epirus	39.67	20.85	sheep	soft	2		yes	no	
+Camembert de Normandie	France	Normandy	48.88	0.19	cow	soft	0.75	24	yes	no	16.5
+Roquefort	France	Aveyron	43.97	2.99	sheep	soft	3	31.5	yes	yes	32
+Edam	Netherlands	North Holland	52.51	5.05	cow	semi-hard	4	26.5	no	no	9.5
+Emmental	Switzerland	Bern	46.96	7.77	cow	hard	4	31	no	no	14
+Cheddar	England	Somerset	51.28	-2.78	cow	hard	12	34	no	no	11
+Mozzarella di Bufala	Italy	Campania	40.86	14.27	buffalo	fresh	0.1	22	yes	no	18.5
+Halloumi	Cyprus		35.16	33.36	sheep	semi-hard	0.5	25	yes	no	12
+Gorgonzola	Italy	Lombardy	45.53	9.4	cow	soft	3	31	yes	yes	21
+Comte	France	Franche-Comte	47.27	5.99	cow	hard	8	33.5	yes	no	26
+Appenzeller	Switzerland	Appenzell	47.33	9.41	cow	hard	3	31	no	no	
+Jarlsberg	Norway	Vestfold	59.91	10.75	cow	semi-hard	3	27	no	no	13.5
+Manchego Curado	Spain	La Mancha	39.4	-3	sheep	hard	6	31.5	no	no	19
+Pecorino Romano	Italy	Lazio	41.9	12.49	sheep	hard	8	36	yes	no	17
+Limburger	Belgium	Liege	50.64	5.57	cow	soft	2	29	no	no	10
+Epoisses	France	Burgundy	47.39	4.68	cow	soft	2	27	yes	no	
+Gouda	Netherlands	South Holland	52.01	4.71	cow	semi-hard	6	30.5	no	no	10.5
+Taleggio	Italy	Lombardy	45.8	9.82	cow	soft	1.5	26	yes	no	16
+Ossau-Iraty	France	Basque Country	43.19	-0.75	sheep	semi-hard	3	30	yes	no	22.5
+Abbaye de Belloc	France	Pays Basque	43.42	-1.18	sheep	hard			no	no	
+Havarti	Denmark	Zealand	55.46	11.77	cow	semi-hard	3	29	no	no	11.5
+Tilsit	Germany	Bavaria	48.14	11.58	cow	semi-hard	5	30	no	no	9
+Queijo Serra da Estrela	Portugal	Beira Interior	40.35	-7.63	sheep	soft	1.5		yes	no	28
+Graviera	Greece	Crete	35.34	25.13	sheep	hard	5	33	yes	no	14
+Vacherin Mont-dOr	Switzerland	Vaud	46.52	6.23	cow	soft	1		yes	no	19.5

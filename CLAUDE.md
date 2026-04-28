@@ -137,7 +137,7 @@ assert <- function(study, output_dir) {
 }
 ```
 
-**Current count**: 63 passing tests (including 2 encoding tests with assert.R assertions).
+**Current count**: 67 passing tests (including 2 encoding tests with assert.R assertions).
 
 ### Adding a New Datatype
 
