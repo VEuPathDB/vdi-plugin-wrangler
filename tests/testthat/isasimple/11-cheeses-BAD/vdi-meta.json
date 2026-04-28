@@ -1,4 +1,5 @@
 {
+  "comment": "LLM-generated TSV where some rows are missing their trailing avg_price_eur_kg value (11 columns instead of 12). readr detects the column count mismatch and entity_from_tsv throws a parsing error. Tests that this is caught and reported as a validation error rather than an unexpected crash. See 12-cheeses-OK for the fixed version.",
   "test_expectation": "fail",
   "expected_technical_error_regex": "Issues were encountered while parsing the file",
   "expected_user_error_regex": "could not be parsed"
