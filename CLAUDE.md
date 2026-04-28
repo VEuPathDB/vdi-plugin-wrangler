@@ -122,6 +122,26 @@ Tests are organized by datatype in `tests/testthat/`:
 
 **Important**: Tests only verify that import completes or fails as expected - they do NOT validate output correctness.
 
+For cases where it's worth pinning a non-obvious invariant about the resulting study object, an optional `assert.R` file could be provided in a test directory. `test_examples.R` would source it and call `assert(study)` after a successful wrangling run. This is not needed for most tests.
+
+```r
+# Example: tests/testthat/isasimple/01-basic/assert.R
+assert <- function(study) {
+  entity <- study %>% get_entities() %>% .[[1]]
+  vars <- entity %>% get_variable_metadata() %>% filter(!is.na(display_order))
+  expect_equal(vars$display_order, seq_len(nrow(vars)))
+}
+```
+
+`test_examples.R` would need a small addition after `export_to_vdi`:
+
+```r
+assert_path <- file.path(example_dir, "assert.R")
+if (file.exists(assert_path)) {
+  local({ source(assert_path); assert(study) })
+}
+```
+
 **Current count**: 48 passing tests.
 
 ### Adding a New Datatype
@@ -132,7 +152,7 @@ Tests are organized by datatype in `tests/testthat/`:
 4. The `wrangle()` function must:
    - Find and process input files
    - Create entities using study.wrangler functions
-   - Validate entities
+   - Optionally call `stop_if_entity_invalid(entity)` before assembling a study object — this surfaces entity-level problems as user-friendly validation errors rather than the generic fallback in `wrangle.R`
    - Return a study object via `study_from_entities(entities = list(...))`
 5. Add format documentation in `doc/<datatype>.md` for outreach
 
