@@ -1,0 +1,4 @@
+{
+  "comment": "Real-world 15-row literature review CSV. Latitude and Longitude columns are entirely NA, so they are silently dropped by entity_from_file(quiet = TRUE) in v1.0.41. Exercises empty-column dropping on a genuine user file.",
+  "test_expectation": "pass"
+}
