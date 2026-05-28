@@ -167,13 +167,13 @@ RUN R -e "install.packages(c('remotes', 'S7', 'igraph'))"
 ## veupathdb projects ##
 
 # Additional GUS repo checkouts
-ARG APICOMMONDATA_COMMIT_HASH=23c59379784a0ada19e2075623298296b05a02af \
+ARG APICOMMONDATA_COMMIT_HASH=8b3d590098fb93c323a4b47edef3dbf01638cc8b \
     CLINEPIDATA_GIT_COMMIT_SHA=8d31ba1b5cf7f6b022058b7c89e8e3ab0665f543 \
     EDA_NEXTFLOW_GIT_COMMIT_SHA=f113cca94b9d16695dc4ac721de211d72e7c396f
 COPY bin/buildGus.bash /usr/bin/buildGus.bash
 RUN /usr/bin/buildGus.bash
 
-ARG LIB_VDI_PLUGIN_STUDY_GIT_REF="9ca0857cad47a382431bbc39053f6a86318176d9"
+ARG LIB_VDI_PLUGIN_STUDY_GIT_REF="a7b39435c5229153a065bb87d1ad5c1482ce120d"
 RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cd vdi-lib-plugin-eda \
     && git checkout ${LIB_VDI_PLUGIN_STUDY_GIT_REF} \
