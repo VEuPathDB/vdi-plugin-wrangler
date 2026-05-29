@@ -1,0 +1,6 @@
+{
+  "comment": "Two columns have the same heading in the input file. This should not be allowed.",
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "Duplicate column names detected",
+  "expected_user_error_regex": "Your data file contains duplicate column names. Please make them unique and re-upload."
+}

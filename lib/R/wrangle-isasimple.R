@@ -31,11 +31,23 @@ wrangle <- function(input_dir) {
   # Add serial ID column before type inference so entity_from_file detects it as the entity ID.
   # provider_label for each column is set automatically to the column name by sync_variable_metadata.
   entity <- tryCatch(
-    entity_from_file(
-      input_file,
-      name = "record",
-      preprocess_fn = function(data) {
-        data %>% mutate(entity_id = sprintf("entity%06d", seq_len(nrow(data))), .before = 1)
+    withCallingHandlers(
+      entity_from_file(
+        input_file,
+        name = "record",
+        preprocess_fn = function(data) {
+          data %>% mutate(entity_id = sprintf("entity%06d", seq_len(nrow(data))), .before = 1)
+        }
+      ),
+      warning = function(w) {
+        if (grepl("Duplicate column names detected", conditionMessage(w))) {
+          stop_validation_error(
+            user_msg = "Your data file contains duplicate column names. Please make them unique and re-upload.",
+            technical_msg = conditionMessage(w),
+            file = input_file
+          )
+        }
+        invokeRestart("muffleWarning")
       }
     ),
     error = function(e) {
