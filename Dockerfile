@@ -167,7 +167,7 @@ RUN R -e "install.packages(c('remotes', 'S7', 'igraph'))"
 ## veupathdb projects ##
 
 # Additional GUS repo checkouts
-ARG APICOMMONDATA_COMMIT_HASH=f0601af133843d57d6c52b2b47f14c033bda124e \
+ARG APICOMMONDATA_COMMIT_HASH=a168d48a619fb84f4f0344975554642322599444 \
     CLINEPIDATA_GIT_COMMIT_SHA=8d31ba1b5cf7f6b022058b7c89e8e3ab0665f543 \
     EDA_NEXTFLOW_GIT_COMMIT_SHA=f113cca94b9d16695dc4ac721de211d72e7c396f
 COPY bin/buildGus.bash /usr/bin/buildGus.bash
