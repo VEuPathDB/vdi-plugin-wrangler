@@ -35,6 +35,8 @@ wrangle <- function(input_dir) {
       entity_from_file(
         input_file,
         name = "record",
+        display_name = "Record",
+        display_name_plural = "Records",
         preprocess_fn = function(data) {
           data %>% mutate(entity_id = sprintf("entity%06d", seq_len(nrow(data))), .before = 1)
         }
