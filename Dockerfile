@@ -33,6 +33,10 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Raise the download timeout (R default is 60s, too short for slow
+# Bioconductor/CRAN mirrors during package downloads).
+RUN echo 'options(timeout = 600)' >> "$(R RHOME)/etc/Rprofile.site"
+
 
 ## non-veupathdb study-wrangler dependencies ##
 
@@ -162,7 +166,11 @@ ARG R_REMOTES_UPGRADE=never
 # Install remaining CRAN dependencies not available via apt, plus remotes
 # (apt version of remotes is too old to handle the 'huge=url' remote type)
 # (same with igraph - needs to be 2.x)
-RUN R -e "install.packages(c('remotes', 'S7', 'igraph'))"
+# R's install.packages() exits 0 even when packages fail to install, so we
+# must explicitly verify and fail the build ourselves (no remotes/utils
+# install function offers a hard-exit-on-failure argument).
+RUN R -e "install.packages(c('remotes', 'S7', 'igraph')); \
+  if (!all(c('remotes', 'S7', 'igraph') %in% rownames(installed.packages()))) quit(status = 1)"
 
 ## veupathdb projects ##
 
@@ -181,9 +189,18 @@ RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
     && cp bin/* /opt/veupathdb/bin
 
-ARG FOO_TEMP=123
 ARG STUDY_WRANGLER_GIT_REF="v1.0.44"
-RUN R -e "remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_GIT_REF}', upgrade_dependencies=F)"
+# install_github() reports failed dependencies as warnings and exits 0, so the
+# build can "succeed" with study.wrangler (or its deps) silently missing.
+# Retry a few times (failures are usually transient download timeouts; retries
+# only re-fetch the still-missing packages) and verify the package actually
+# loads, which exercises the whole dependency chain.
+RUN R -e "for (i in 1:3) { \
+    try(remotes::install_github('VEuPathDB/study-wrangler', '${STUDY_WRANGLER_GIT_REF}', upgrade_dependencies=F)); \
+    if (requireNamespace('study.wrangler', quietly=TRUE)) quit(status=0); \
+    message('study.wrangler not loadable; attempt ', i, ' failed, retrying...'); \
+  }; \
+  quit(status=1)"
 
 # VDI PLUGIN SERVER
 ARG PLUGIN_SERVER_VERSION=v1.8.2
