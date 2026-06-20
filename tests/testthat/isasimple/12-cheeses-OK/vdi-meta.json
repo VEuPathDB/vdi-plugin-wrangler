@@ -1,0 +1,4 @@
+{
+  "comment": "Same cheese dataset as 11-cheeses-BAD, but generated programmatically in R (tribble + write_tsv) so every row is guaranteed to have all 12 columns. Missing values are represented as empty fields rather than omitted trailing tabs. Confirms the isasimple wrangler handles NAs in numeric columns correctly.",
+  "test_expectation": "pass"
+}

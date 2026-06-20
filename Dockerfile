@@ -175,13 +175,13 @@ RUN R -e "install.packages(c('remotes', 'S7', 'igraph')); \
 ## veupathdb projects ##
 
 # Additional GUS repo checkouts
-ARG APICOMMONDATA_COMMIT_HASH=f7659ae9bede67f8848f7d01adfcbb09c50deae8 \
+ARG APICOMMONDATA_COMMIT_HASH=08aabc3a02b249e29282ca9a6d0bc8b5d024b2a8 \
     CLINEPIDATA_GIT_COMMIT_SHA=8d31ba1b5cf7f6b022058b7c89e8e3ab0665f543 \
     EDA_NEXTFLOW_GIT_COMMIT_SHA=f113cca94b9d16695dc4ac721de211d72e7c396f
 COPY bin/buildGus.bash /usr/bin/buildGus.bash
 RUN /usr/bin/buildGus.bash
 
-ARG LIB_VDI_PLUGIN_STUDY_GIT_REF="94274cbe2bee64e8e038e46f92b7a803fb48287a"
+ARG LIB_VDI_PLUGIN_STUDY_GIT_REF="eabaee2d16c0c513f7962cf28fefcedf5486cf14"
 RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cd vdi-lib-plugin-eda \
     && git checkout ${LIB_VDI_PLUGIN_STUDY_GIT_REF} \
@@ -189,7 +189,7 @@ RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
     && cp bin/* /opt/veupathdb/bin
 
-ARG STUDY_WRANGLER_GIT_REF="v1.0.38"
+ARG STUDY_WRANGLER_GIT_REF="v1.0.44"
 # install_github() reports failed dependencies as warnings and exits 0, so the
 # build can "succeed" with study.wrangler (or its deps) silently missing.
 # Retry a few times (failures are usually transient download timeouts; retries
@@ -203,7 +203,7 @@ RUN R -e "for (i in 1:3) { \
   quit(status=1)"
 
 # VDI PLUGIN SERVER
-ARG PLUGIN_SERVER_VERSION=v1.7.0
+ARG PLUGIN_SERVER_VERSION=v1.8.2
 RUN curl "https://github.com/VEuPathDB/vdi-service/releases/download/${PLUGIN_SERVER_VERSION}/plugin-server.tar.gz" -Lf --no-progress-meter | tar -xz
 
 # scripts and paths

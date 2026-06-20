@@ -178,6 +178,11 @@ for (datatype in datatypes) {
                     "Missing required base files: {paste(missing_files, collapse=', ')}"
                   ))
                 }
+
+                assert_path <- file.path(example_dir, "assert.R")
+                if (file.exists(assert_path)) {
+                  local({ source(assert_path); assert(study, tmp_dir) })
+                }
               }
             } else {
               stop(glue::glue("Validation of study failed for '{datatype}/{example}'"))

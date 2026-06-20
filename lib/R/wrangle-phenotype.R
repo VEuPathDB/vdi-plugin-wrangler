@@ -27,7 +27,12 @@ wrangle <- function(input_dir) {
 
   input_file <- input_files[1]
   entity <- tryCatch(
-    entity_from_file(input_file, name = "phenotype"),
+    entity_from_file(
+      input_file,
+      name = "phenotype",
+      display_name = "Phenotype",
+      display_name_plural = "Phenotypes"
+    ),
     error = function(e) {
       stop_validation_error(
         user_msg = "Your data file could not be parsed. Please check that it is a valid TSV or CSV file where every row has the same number of columns as the header (use empty values rather than omitting them).",

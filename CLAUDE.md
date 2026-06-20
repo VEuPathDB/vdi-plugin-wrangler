@@ -122,7 +122,22 @@ Tests are organized by datatype in `tests/testthat/`:
 
 **Important**: Tests only verify that import completes or fails as expected - they do NOT validate output correctness.
 
-**Current count**: 48 passing tests.
+For cases where it's worth pinning a non-obvious invariant about the resulting study object or its exported cache files, an optional `assert.R` file can be provided in a test directory. `test_examples.R` sources it and calls `assert(study, output_dir)` after a successful export.
+
+```r
+# Example: tests/testthat/isasimple/09-iso8859-OK/assert.R
+assert <- function(study, output_dir) {
+  cache_files <- list.files(output_dir, pattern = "attributevalue.*\\.cache$", full.names = TRUE)
+  stopifnot("No attributevalue cache found" = length(cache_files) > 0)
+  all_text <- paste(
+    sapply(cache_files, function(f) paste(readLines(f, encoding = "UTF-8", warn = FALSE), collapse = "\n")),
+    collapse = "\n"
+  )
+  expect_true(grepl("ü", all_text, fixed = TRUE), label = "ü preserved in cache")
+}
+```
+
+**Current count**: 67 passing tests (including 2 encoding tests with assert.R assertions).
 
 ### Adding a New Datatype
 
@@ -132,7 +147,7 @@ Tests are organized by datatype in `tests/testthat/`:
 4. The `wrangle()` function must:
    - Find and process input files
    - Create entities using study.wrangler functions
-   - Validate entities
+   - Optionally call `stop_if_entity_invalid(entity)` before assembling a study object — this surfaces entity-level problems as user-friendly validation errors rather than the generic fallback in `wrangle.R`
    - Return a study object via `study_from_entities(entities = list(...))`
 5. Add format documentation in `doc/<datatype>.md` for outreach
 

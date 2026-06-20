@@ -30,17 +30,45 @@ wrangle <- function(input_dir) {
 
   # Add serial ID column before type inference so entity_from_file detects it as the entity ID.
   # provider_label for each column is set automatically to the column name by sync_variable_metadata.
-  entity <- entity_from_file(
-    input_file,
-    name = "record",
-    preprocess_fn = function(data) {
-      data %>% mutate(entity_id = sprintf("entity%06d", seq_len(nrow(data))), .before = 1)
+  entity <- tryCatch(
+    withCallingHandlers(
+      entity_from_file(
+        input_file,
+        name = "record",
+        display_name = "Record",
+        display_name_plural = "Records",
+        preprocess_fn = function(data) {
+          data %>% mutate(entity_id = sprintf("entity%06d", seq_len(nrow(data))), .before = 1)
+        }
+      ),
+      warning = function(w) {
+        if (grepl("Duplicate column names detected", conditionMessage(w))) {
+          stop_validation_error(
+            user_msg = "Your data file contains duplicate column names. Please make them unique and re-upload.",
+            technical_msg = conditionMessage(w),
+            file = input_file
+          )
+        }
+        invokeRestart("muffleWarning")
+      }
+    ),
+    error = function(e) {
+      stop_validation_error(
+        user_msg = "Your data file could not be parsed. Please check that it is a valid TSV or CSV file where every row has the same number of columns as the header (use empty values rather than omitting them).",
+        technical_msg = conditionMessage(e),
+        file = input_file
+      )
     }
   )
 
   # Redetect all user-supplied columns as variables (not IDs), leaving entity_id as the ID.
   user_columns <- setdiff(names(entity@data), "entity_id")
   entity <- entity %>% redetect_columns_as_variables(user_columns)
+
+  # Preserve input column order in the visualization system
+  for (i in seq_along(user_columns)) {
+    entity <- entity %>% set_variable_metadata(user_columns[[i]], display_order = i)
+  }
 
   # Infer lat/lng variable metadata for EDA
   entity <- entity %>% infer_geo_variables_for_eda()
