@@ -202,6 +202,14 @@ RUN R -e "for (i in 1:3) { \
   }; \
   quit(status=1)"
 
+ARG LIB_PERL_GIT_COMMIT_SHA=c2c5bfb65b649f179282572ac59afc6ff43e9420
+RUN git clone https://github.com/VEuPathDB/vdi-lib-perl-utils.git \
+  && cd vdi-lib-perl-utils \
+  && git checkout ${LIB_PERL_GIT_COMMIT_SHA} \
+  && mkdir -p /opt/veupathdb/lib/perl /opt/veupathdb/bin \
+  && cp lib/perl/*.pm /opt/veupathdb/lib/perl \
+  && rm -rf vdi-lib-perl-utils
+
 # VDI PLUGIN SERVER
 ARG PLUGIN_SERVER_VERSION=v1.8.2
 RUN curl "https://github.com/VEuPathDB/vdi-service/releases/download/${PLUGIN_SERVER_VERSION}/plugin-server.tar.gz" -Lf --no-progress-meter | tar -xz
