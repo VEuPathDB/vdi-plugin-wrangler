@@ -211,7 +211,7 @@ RUN git clone https://github.com/VEuPathDB/vdi-lib-perl-utils.git \
   && rm -rf vdi-lib-perl-utils
 
 # VDI PLUGIN SERVER
-ARG PLUGIN_SERVER_VERSION=v1.8.8
+ARG PLUGIN_SERVER_VERSION=v1.8.10
 RUN curl "https://github.com/VEuPathDB/vdi-service/releases/download/${PLUGIN_SERVER_VERSION}/plugin-server.tar.gz" -Lf --no-progress-meter | tar -xz
 
 # scripts and paths
