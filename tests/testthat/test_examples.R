@@ -46,6 +46,11 @@ test_timings <- list()
 
 datatypes <- list.dirs(recursive = FALSE, full.names = FALSE)
 
+# Directories suffixed '-live' make real, billable LLM API calls. Opt in explicitly.
+if (!identical(Sys.getenv("WRANGLER_LLM_LIVE"), "1")) {
+  datatypes <- datatypes[!grepl("-live$", datatypes)]
+}
+
 for (datatype in datatypes) {
   examples <- list.dirs(datatype, recursive = FALSE, full.names = FALSE)
 

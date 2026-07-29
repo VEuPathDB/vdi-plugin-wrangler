@@ -1,0 +1,6 @@
+This RNA-seq experiment examines the transcriptional response of blood-stage
+Plasmodium falciparum parasites to artemisinin exposure. Samples S1 and S2
+were cultured in the presence of 10 nanomolar artemisinin for six hours
+before harvest. Samples S3 and S4 were cultured in parallel under identical
+conditions but without any drug, serving as untreated controls. All four
+cultures were harvested at the same six-hour timepoint.
