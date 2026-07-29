@@ -1,12 +1,12 @@
 # Bulk RNA-seq counts wrangler — design
 
 Date: 2026-07-29
-Branch: `bulk-rnaseq-counts`
+Branch: `rnaseq-rc`
 Supersedes: `PLAN.md` (retained as the originating brief; this document is authoritative where the two disagree)
 
 ## Goal
 
-Add a `bulk-rnaseq-counts` user dataset type to the VDI wrangler plugin. A user uploads two or three
+Add an `rnaseq-rc` user dataset type to the VDI wrangler plugin. A user uploads two or three
 files in a zip; VDI unpacks them into the plugin's input directory. The plugin turns them into an
 EDA-loadable study containing a sample entity and a counts entity.
 
@@ -66,7 +66,7 @@ this a union; with identical sample columns required, union and intersection coi
 
 ## Processing flow
 
-`wrangle(input_dir)` in `lib/R/wrangle-bulk-rnaseq-counts.R`:
+`wrangle(input_dir)` in `lib/R/wrangle-rnaseq-rc.R`:
 
 1. `llm_mocks_init(input_dir)`
 2. Discover and validate count files. Derive the authoritative sample-ID set.
@@ -166,9 +166,10 @@ Two deviations from the JS original:
   colon.
 - omit the `SRA.ID.s.` column. User uploads have no SRA accessions.
 
-Type inference follows the JS rules, corrected for study-wrangler's actual `data_type` factor levels
-(`id`, `string`, `number`, `date`, `longitude`, `integer`, `category` — there is no `boolean` or
-`decimal`, contrary to the stale `STF_documentation/metadata-fields.md`):
+Type inference follows the JS rules, using study-wrangler's actual `data_type` factor levels as
+declared in `R/Entity-metadata-defaults.R` — `id`, `string`, `number`, `date`, `longitude`,
+`integer`, `category`. There is no `boolean` or `decimal`. Always take these from the code rather
+than from `STF_documentation/`, which can drift:
 
 | Values | data_type | data_shape |
 |---|---|---|
@@ -279,7 +280,7 @@ genes plus three HTSeq specials. The large-N fixture has 30+ sample columns and 
 
 ### Test directories
 
-`tests/testthat/bulk-rnaseq-counts/`:
+`tests/testthat/rnaseq-rc/`:
 
 | Directory | Covers |
 |---|---|
@@ -308,7 +309,7 @@ genes plus three HTSeq specials. The large-N fixture has 30+ sample columns and 
 | `23-sense-without-antisense-BAD` | incomplete stranded pair |
 | `24-gene-set-mismatch-BAD` | sense and antisense disagree on genes |
 
-`tests/testthat/bulk-rnaseq-counts-live/` holds the opt-in real-model tests, skipped unless
+`tests/testthat/rnaseq-rc-live/` holds the opt-in real-model tests, skipped unless
 `WRANGLER_LLM_LIVE=1`.
 
 `PLAN.md` also lists "count-to-sample linkage failures during final study validation". That case is
@@ -357,5 +358,4 @@ Failing directories get `expected_technical_error_regex` and `expected_user_erro
 | `expression-shepherd/R/wrangle-rnaseq.R` | also the stale wide variant |
 | `dataset-curator/skills/sample-annotations-to-stf/` | JSON schema and the JS converter being ported |
 | `dataset-curator/skills/curate-bulk-rnaseq/resources/step-2-analyze-samples.md` | source of the annotation prompt content |
-| `study-wrangler/R/Entity-metadata-defaults.R` | authoritative `data_type`/`data_shape` levels and allowed YAML variable fields |
-| `study-wrangler/STF_documentation/metadata-fields.md` | **out of date** on `data_type` values |
+| `study-wrangler/R/Entity-metadata-defaults.R` | authoritative `data_type`/`data_shape` levels and allowed YAML variable fields — always check here, not `STF_documentation/` |
