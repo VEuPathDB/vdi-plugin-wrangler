@@ -85,6 +85,27 @@ test_that("a failed first attempt is corrected by the retry", {
   })
 })
 
+test_that("a genuinely entity-invalid first attempt (not a bad ID) is corrected by the retry", {
+  # Regression test for gate 1: the first annotation below covers both
+  # authoritative IDs (no invented/missing IDs -- gates 2 and 3 would pass),
+  # but repeats "S1", which fails the entity's own duplicate-ID-column
+  # validator (a genuine stop_if_entity_invalid()-style failure, not a bad
+  # sample ID). If gate 1 ever regresses to a non-catchable
+  # stop_if_entity_invalid() call in production, this exact shape of failure
+  # would kill the process before the retry ran. Under TESTTHAT=true (as
+  # here) that regression would still be caught by testthat's stop()-based
+  # translation of quit(), so this test alone cannot fully protect against
+  # it -- see the comment on gate 1 in sample_annotation.R for the rest of
+  # the guard.
+  d <- mock_dir(list(annotate = list(ann_for(c("S1", "S2", "S1")), ann_for(c("S1", "S2")))))
+  withr::with_envvar(c(WRANGLER_ALLOW_LLM_MOCKS = "1"), {
+    llm_mocks_init(d)
+    entity <- generate_sample_entity(c("S1", "S2"), "S1 infected, S2 control")
+    expect_setequal(entity %>% get_data() %>% pull(sample.ID), c("S1", "S2"))
+    expect_length(llm_mocks_exhausted(), 0)
+  })
+})
+
 test_that("two failed attempts stop with a transformation error", {
   d <- mock_dir(list(annotate = list(ann_for(c("S1", "S9")), ann_for(c("S1", "S8")))))
   withr::with_envvar(c(WRANGLER_ALLOW_LLM_MOCKS = "1"), {

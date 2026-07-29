@@ -212,13 +212,27 @@ annotation_prompt <- function(sample_ids, sample_info_text, previous_errors = NU
 #'
 #' Gates, in order:
 #'
-#' 1. `stop_if_entity_invalid(entity)` -- standard sample-entity validation.
+#' 1. Standard sample-entity validation (see below for why this is not
+#'    `stop_if_entity_invalid()`).
 #' 2. Every generated `sample.ID` must be a member of `authoritative_ids`.
 #' 3. Every `authoritative_ids` value must be present in the entity.
 #'
-#' Gates 2 and 3 name the offending IDs: their failure messages are fed back
-#' into the retry prompt by `generate_sample_entity()`, so a generic
-#' "sample IDs do not match" message would give the model nothing to act on.
+#' All three gates fail via a plain `stop()`, on purpose: this function is
+#' always called from inside `generate_sample_entity()`'s `tryCatch()`, which
+#' needs every gate's failure to be catchable so the single retry can fire.
+#' Gate 1 deliberately does NOT call `stop_if_entity_invalid()` even though
+#' that is the idiomatic entity-validity check elsewhere in this codebase:
+#' `stop_if_entity_invalid()` routes to `stop_transformation_error()`, which
+#' calls `quit(status = 99)` in production (anything other than
+#' `Sys.getenv("TESTTHAT") == "true"`). A gate-1 failure on the first LLM
+#' attempt would then kill the R process before the retry ever ran -- the
+#' retry is the entire point of this task, and the bug is invisible in the
+#' test suite because testthat sets TESTTHAT=true, which turns that quit()
+#' into a catchable stop() and masks the defect. Do not "simplify" this back
+#' to `stop_if_entity_invalid()`. Gates 2 and 3 name the offending IDs: all
+#' three gates' failure messages are fed back into the retry prompt by
+#' `generate_sample_entity()`, so a generic "sample IDs do not match" (or
+#' "entity invalid") message would give the model nothing to act on.
 #'
 #' @param annotations parsed annotation list (see `annotations_to_stf()`)
 #' @param authoritative_ids character vector: the union of sample IDs found
@@ -231,7 +245,24 @@ build_sample_entity <- function(annotations, authoritative_ids) {
   tsv_path <- annotations_to_stf(annotations, stf_dir)
   entity <- entity_from_stf(tsv_path)
 
-  stop_if_entity_invalid(entity)
+  # Gate 1, catchable (see the note above): validate with format = "upload"
+  # since those messages are written for a non-R-reading uploader, which
+  # also makes them better material for a retry prompt than the "full"
+  # format's R remediation hints.
+  upload_msgs <- character(0)
+  is_valid <- withCallingHandlers(
+    entity %>% validate(format = "upload"),
+    warning = function(w) {
+      upload_msgs <<- c(upload_msgs, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  if (!is_valid) {
+    stop(paste(
+      c("Your data could not be loaded into the database:", upload_msgs),
+      collapse = "\n\n"
+    ))
+  }
 
   generated_ids <- entity %>% get_data() %>% pull(sample.ID)
 
