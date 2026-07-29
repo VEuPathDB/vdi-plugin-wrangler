@@ -1,0 +1,7 @@
+{
+  "comment": "Count file is named counts.tsv, which is not a recognised stem.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseq-rc", "version": "1.0" },
+  "expected_technical_error_regex": "counts\\.tsv",
+  "expected_user_error_regex": "sense-counts"
+}
