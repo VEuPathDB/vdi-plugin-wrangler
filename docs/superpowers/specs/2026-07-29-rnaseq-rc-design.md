@@ -2,7 +2,7 @@
 
 Date: 2026-07-29
 Branch: `rnaseq-rc`
-Supersedes: `PLAN.md` (retained as the originating brief; this document is authoritative where the two disagree)
+Supersedes: [`2026-07-29-rnaseq-rc-brief.md`](2026-07-29-rnaseq-rc-brief.md) (retained as the originating brief; this document is authoritative where the two disagree)
 
 ## Goal
 
@@ -365,6 +365,26 @@ Failing directories get `expected_technical_error_regex` and `expected_user_erro
   a single organism
 - fractional counts from RSEM/salmon/kallisto; counts must be integers
 - doing anything about poor-quality metadata extraction beyond detecting validation failure
+
+## Known follow-ups
+
+Two things decided during implementation, deliberately left as-is:
+
+- **Entity name whitespace.** The counts entity is built with `name = "HTSeq counts"`
+  (`lib/R/wrangle-rnaseq-rc.R`), so `entity@name` itself contains whitespace. The original intent
+  was a machine-style name (e.g. `htseq_counts`) carrying `display_name = "HTSeq counts"`. Nothing
+  is broken by the current form — it validates and exports fine — so this was deliberately deferred
+  as cosmetic rather than blocking. Renaming would touch `entity_from_tibble(name = ...)` and
+  `set_parents()` in `wrangle-rnaseq-rc.R`, every fixture `assert.R` that calls
+  `get_entity("HTSeq counts")`, and `doc/rnaseq-rc.md`. The stable IDs (`VEUPATHDB_GENE_ID`,
+  `SEQUENCE_READ_COUNT`, `SEQUENCE_READ_COUNT_SENSE`, `SEQUENCE_READ_COUNT_ANTISENSE`) are a
+  separate integration contract and must **not** change alongside a name rename.
+- **Live-test semantic coverage.** `tests/testthat/rnaseq-rc-live/01-real-models-OK/assert.R`
+  deliberately pins only structural invariants (entity names, row counts, stable IDs) and never
+  which sample received which factor value, because real model output varies between runs. The
+  live test therefore confirms that prose parses into a valid, DESeq-suitable structure — not that
+  the model inferred the correct sample-to-condition mapping. That gap is inherent to testing
+  against a non-deterministic model rather than a gap in the test itself.
 
 ## Key references
 
