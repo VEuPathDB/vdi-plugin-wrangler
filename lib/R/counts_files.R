@@ -194,14 +194,21 @@ read_counts_long <- function(path) {
   # blank cells and literal "NA" text into real NA even with an all-character
   # col_types. We want those cells to survive verbatim so our own validation
   # (below) can reject them with a helpful message.
-  raw <- readr::read_delim(
+  #
+  # suppressWarnings(): a row with fewer fields than the header (e.g. a
+  # trailing count accidentally deleted) makes readr emit an advisory
+  # "parsing issues" warning pointing the caller at problems(dat) -- of no
+  # use here since dat is never returned to the caller. readr still fills the
+  # short row's missing cell with "", which our own validation below rejects
+  # with a specific, actionable message naming the offending gene and sample.
+  raw <- suppressWarnings(readr::read_delim(
     path,
     delim = delim,
     col_types = readr::cols(.default = "c"),
     name_repair = "minimal",
     trim_ws = FALSE,
     na = character(0)
-  )
+  ))
 
   if (ncol(raw) < 1) {
     stop_validation_error(

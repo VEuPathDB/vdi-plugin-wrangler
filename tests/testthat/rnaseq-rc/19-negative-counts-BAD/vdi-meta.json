@@ -1,0 +1,7 @@
+{
+  "comment": "Gene PF3D7_0500 has a negative count (-5) for sample S2, which is not a valid HTSeq count.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseq-rc", "version": "1.0" },
+  "expected_technical_error_regex": "Invalid count value '-5'",
+  "expected_user_error_regex": "non-count value \\('-5'"
+}

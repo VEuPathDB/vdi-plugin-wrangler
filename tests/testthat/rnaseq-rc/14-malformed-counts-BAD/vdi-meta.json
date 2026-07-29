@@ -1,0 +1,7 @@
+{
+  "comment": "Gene PF3D7_0300's row has one fewer field than the header (missing the S4 count), so it is read back as an empty count value.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseq-rc", "version": "1.0" },
+  "expected_technical_error_regex": "Invalid count value '' at gene 'PF3D7_0300'",
+  "expected_user_error_regex": "non-count value.*PF3D7_0300"
+}

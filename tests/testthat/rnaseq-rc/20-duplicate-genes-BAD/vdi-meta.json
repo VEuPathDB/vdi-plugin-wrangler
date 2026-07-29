@@ -1,0 +1,7 @@
+{
+  "comment": "Gene PF3D7_0900 appears on two separate rows in the count file.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseq-rc", "version": "1.0" },
+  "expected_technical_error_regex": "Duplicate Gene values.*PF3D7_0900",
+  "expected_user_error_regex": "duplicate gene IDs \\(e\\.g\\. 'PF3D7_0900'\\)"
+}
