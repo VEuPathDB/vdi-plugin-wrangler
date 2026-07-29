@@ -1,0 +1,7 @@
+{
+  "comment": "31 sample columns (classify_labels mocked to labels_informative to bypass the sample-info anchoring check), and both annotate mocks invent a sample ID that is not present in the count files, so generate_sample_entity fails after the retry and its many-samples warning should fire since length(sample_ids) > 30.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseq-rc", "version": "1.0" },
+  "expected_technical_error_regex": "First attempt error:.*S99.*Second attempt error:.*S100",
+  "expected_user_error_regex": "lot of samples \\(31\\), which can challenge our AI-based processing"
+}

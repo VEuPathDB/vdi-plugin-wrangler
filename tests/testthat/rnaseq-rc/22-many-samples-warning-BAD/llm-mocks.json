@@ -1,0 +1,463 @@
+{
+  "classify_labels": [
+    "labels_informative"
+  ],
+  "annotate": [
+    {
+      "profileSetName": "31-sample time course",
+      "factors": {
+        "timepoint": {
+          "displayName": "timepoint",
+          "definition": "Ordinal position in the time-course series"
+        }
+      },
+      "samples": [
+        {
+          "sampleId": "S1",
+          "label": "timepoint 1",
+          "factors": {
+            "timepoint": "1"
+          }
+        },
+        {
+          "sampleId": "S2",
+          "label": "timepoint 2",
+          "factors": {
+            "timepoint": "2"
+          }
+        },
+        {
+          "sampleId": "S3",
+          "label": "timepoint 3",
+          "factors": {
+            "timepoint": "3"
+          }
+        },
+        {
+          "sampleId": "S4",
+          "label": "timepoint 4",
+          "factors": {
+            "timepoint": "4"
+          }
+        },
+        {
+          "sampleId": "S5",
+          "label": "timepoint 5",
+          "factors": {
+            "timepoint": "5"
+          }
+        },
+        {
+          "sampleId": "S6",
+          "label": "timepoint 6",
+          "factors": {
+            "timepoint": "6"
+          }
+        },
+        {
+          "sampleId": "S7",
+          "label": "timepoint 7",
+          "factors": {
+            "timepoint": "7"
+          }
+        },
+        {
+          "sampleId": "S8",
+          "label": "timepoint 8",
+          "factors": {
+            "timepoint": "8"
+          }
+        },
+        {
+          "sampleId": "S9",
+          "label": "timepoint 9",
+          "factors": {
+            "timepoint": "9"
+          }
+        },
+        {
+          "sampleId": "S10",
+          "label": "timepoint 10",
+          "factors": {
+            "timepoint": "10"
+          }
+        },
+        {
+          "sampleId": "S11",
+          "label": "timepoint 11",
+          "factors": {
+            "timepoint": "11"
+          }
+        },
+        {
+          "sampleId": "S12",
+          "label": "timepoint 12",
+          "factors": {
+            "timepoint": "12"
+          }
+        },
+        {
+          "sampleId": "S13",
+          "label": "timepoint 13",
+          "factors": {
+            "timepoint": "13"
+          }
+        },
+        {
+          "sampleId": "S14",
+          "label": "timepoint 14",
+          "factors": {
+            "timepoint": "14"
+          }
+        },
+        {
+          "sampleId": "S15",
+          "label": "timepoint 15",
+          "factors": {
+            "timepoint": "15"
+          }
+        },
+        {
+          "sampleId": "S16",
+          "label": "timepoint 16",
+          "factors": {
+            "timepoint": "16"
+          }
+        },
+        {
+          "sampleId": "S17",
+          "label": "timepoint 17",
+          "factors": {
+            "timepoint": "17"
+          }
+        },
+        {
+          "sampleId": "S18",
+          "label": "timepoint 18",
+          "factors": {
+            "timepoint": "18"
+          }
+        },
+        {
+          "sampleId": "S19",
+          "label": "timepoint 19",
+          "factors": {
+            "timepoint": "19"
+          }
+        },
+        {
+          "sampleId": "S20",
+          "label": "timepoint 20",
+          "factors": {
+            "timepoint": "20"
+          }
+        },
+        {
+          "sampleId": "S21",
+          "label": "timepoint 21",
+          "factors": {
+            "timepoint": "21"
+          }
+        },
+        {
+          "sampleId": "S22",
+          "label": "timepoint 22",
+          "factors": {
+            "timepoint": "22"
+          }
+        },
+        {
+          "sampleId": "S23",
+          "label": "timepoint 23",
+          "factors": {
+            "timepoint": "23"
+          }
+        },
+        {
+          "sampleId": "S24",
+          "label": "timepoint 24",
+          "factors": {
+            "timepoint": "24"
+          }
+        },
+        {
+          "sampleId": "S25",
+          "label": "timepoint 25",
+          "factors": {
+            "timepoint": "25"
+          }
+        },
+        {
+          "sampleId": "S26",
+          "label": "timepoint 26",
+          "factors": {
+            "timepoint": "26"
+          }
+        },
+        {
+          "sampleId": "S27",
+          "label": "timepoint 27",
+          "factors": {
+            "timepoint": "27"
+          }
+        },
+        {
+          "sampleId": "S28",
+          "label": "timepoint 28",
+          "factors": {
+            "timepoint": "28"
+          }
+        },
+        {
+          "sampleId": "S29",
+          "label": "timepoint 29",
+          "factors": {
+            "timepoint": "29"
+          }
+        },
+        {
+          "sampleId": "S30",
+          "label": "timepoint 30",
+          "factors": {
+            "timepoint": "30"
+          }
+        },
+        {
+          "sampleId": "S99",
+          "label": "timepoint 31",
+          "factors": {
+            "timepoint": "31"
+          }
+        }
+      ]
+    },
+    {
+      "profileSetName": "31-sample time course",
+      "factors": {
+        "timepoint": {
+          "displayName": "timepoint",
+          "definition": "Ordinal position in the time-course series"
+        }
+      },
+      "samples": [
+        {
+          "sampleId": "S1",
+          "label": "timepoint 1",
+          "factors": {
+            "timepoint": "1"
+          }
+        },
+        {
+          "sampleId": "S2",
+          "label": "timepoint 2",
+          "factors": {
+            "timepoint": "2"
+          }
+        },
+        {
+          "sampleId": "S3",
+          "label": "timepoint 3",
+          "factors": {
+            "timepoint": "3"
+          }
+        },
+        {
+          "sampleId": "S4",
+          "label": "timepoint 4",
+          "factors": {
+            "timepoint": "4"
+          }
+        },
+        {
+          "sampleId": "S5",
+          "label": "timepoint 5",
+          "factors": {
+            "timepoint": "5"
+          }
+        },
+        {
+          "sampleId": "S6",
+          "label": "timepoint 6",
+          "factors": {
+            "timepoint": "6"
+          }
+        },
+        {
+          "sampleId": "S7",
+          "label": "timepoint 7",
+          "factors": {
+            "timepoint": "7"
+          }
+        },
+        {
+          "sampleId": "S8",
+          "label": "timepoint 8",
+          "factors": {
+            "timepoint": "8"
+          }
+        },
+        {
+          "sampleId": "S9",
+          "label": "timepoint 9",
+          "factors": {
+            "timepoint": "9"
+          }
+        },
+        {
+          "sampleId": "S10",
+          "label": "timepoint 10",
+          "factors": {
+            "timepoint": "10"
+          }
+        },
+        {
+          "sampleId": "S11",
+          "label": "timepoint 11",
+          "factors": {
+            "timepoint": "11"
+          }
+        },
+        {
+          "sampleId": "S12",
+          "label": "timepoint 12",
+          "factors": {
+            "timepoint": "12"
+          }
+        },
+        {
+          "sampleId": "S13",
+          "label": "timepoint 13",
+          "factors": {
+            "timepoint": "13"
+          }
+        },
+        {
+          "sampleId": "S14",
+          "label": "timepoint 14",
+          "factors": {
+            "timepoint": "14"
+          }
+        },
+        {
+          "sampleId": "S15",
+          "label": "timepoint 15",
+          "factors": {
+            "timepoint": "15"
+          }
+        },
+        {
+          "sampleId": "S16",
+          "label": "timepoint 16",
+          "factors": {
+            "timepoint": "16"
+          }
+        },
+        {
+          "sampleId": "S17",
+          "label": "timepoint 17",
+          "factors": {
+            "timepoint": "17"
+          }
+        },
+        {
+          "sampleId": "S18",
+          "label": "timepoint 18",
+          "factors": {
+            "timepoint": "18"
+          }
+        },
+        {
+          "sampleId": "S19",
+          "label": "timepoint 19",
+          "factors": {
+            "timepoint": "19"
+          }
+        },
+        {
+          "sampleId": "S20",
+          "label": "timepoint 20",
+          "factors": {
+            "timepoint": "20"
+          }
+        },
+        {
+          "sampleId": "S21",
+          "label": "timepoint 21",
+          "factors": {
+            "timepoint": "21"
+          }
+        },
+        {
+          "sampleId": "S22",
+          "label": "timepoint 22",
+          "factors": {
+            "timepoint": "22"
+          }
+        },
+        {
+          "sampleId": "S23",
+          "label": "timepoint 23",
+          "factors": {
+            "timepoint": "23"
+          }
+        },
+        {
+          "sampleId": "S24",
+          "label": "timepoint 24",
+          "factors": {
+            "timepoint": "24"
+          }
+        },
+        {
+          "sampleId": "S25",
+          "label": "timepoint 25",
+          "factors": {
+            "timepoint": "25"
+          }
+        },
+        {
+          "sampleId": "S26",
+          "label": "timepoint 26",
+          "factors": {
+            "timepoint": "26"
+          }
+        },
+        {
+          "sampleId": "S27",
+          "label": "timepoint 27",
+          "factors": {
+            "timepoint": "27"
+          }
+        },
+        {
+          "sampleId": "S28",
+          "label": "timepoint 28",
+          "factors": {
+            "timepoint": "28"
+          }
+        },
+        {
+          "sampleId": "S29",
+          "label": "timepoint 29",
+          "factors": {
+            "timepoint": "29"
+          }
+        },
+        {
+          "sampleId": "S30",
+          "label": "timepoint 30",
+          "factors": {
+            "timepoint": "30"
+          }
+        },
+        {
+          "sampleId": "S100",
+          "label": "timepoint 31",
+          "factors": {
+            "timepoint": "31"
+          }
+        }
+      ]
+    }
+  ]
+}
