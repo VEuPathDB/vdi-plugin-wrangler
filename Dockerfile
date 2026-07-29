@@ -202,6 +202,17 @@ RUN R -e "for (i in 1:3) { \
   }; \
   quit(status=1)"
 
+# this.path lets lib/R/wrangle-rnaseq-rc.R locate its sibling modules via
+# this.path::this.dir(), independent of the caller's cwd and of ORIGINAL_WD
+# being set. Deliberately placed after the study.wrangler install_github
+# layer (rather than in the earlier install.packages(c('remotes', 'S7',
+# 'igraph')) layer) so this addition doesn't bust that layer's cache and
+# force a ~45 minute rebuild. Small CRAN package, not available via apt.
+# install.packages() exits 0 even on failure (see note above), so verify
+# with requireNamespace() and fail the build ourselves.
+RUN R -e "install.packages('this.path'); \
+  if (!requireNamespace('this.path', quietly=TRUE)) quit(status=1)"
+
 ARG LIB_PERL_GIT_COMMIT_SHA=c2c5bfb65b649f179282572ac59afc6ff43e9420
 RUN git clone https://github.com/VEuPathDB/vdi-lib-perl-utils.git \
   && cd vdi-lib-perl-utils \

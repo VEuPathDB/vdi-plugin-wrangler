@@ -12,15 +12,16 @@
 #'
 
 # `bin/wrangle.R` sources only `lib/R/wrangle-<datatype>.R`, so this file
-# must source its own siblings. Resolve relative to the original working
-# directory (mirroring `tests/testthat/test_examples.R:18`) so paths work
-# both from `bin/wrangle.R` (cwd `/opt/veupathdb`) and from
-# `test_examples.R` (cwd `tests/testthat`).
-original_wd <- Sys.getenv("ORIGINAL_WD", unset = ".")
-source(file.path(original_wd, "lib/R/llm_client.R"))
-source(file.path(original_wd, "lib/R/counts_files.R"))
-source(file.path(original_wd, "lib/R/annotations_to_stf.R"))
-source(file.path(original_wd, "lib/R/sample_annotation.R"))
+# must source its own siblings. Resolved via this.path::this.dir(), which
+# returns the directory of *this* sourced file regardless of the caller's
+# cwd or how it was invoked -- independent of ORIGINAL_WD being set, unlike
+# the Sys.getenv("ORIGINAL_WD", unset = ".") fallback used elsewhere in this
+# repo (e.g. tests/testthat/test_examples.R:18).
+.this_dir <- this.path::this.dir()
+source(file.path(.this_dir, "llm_client.R"))
+source(file.path(.this_dir, "counts_files.R"))
+source(file.path(.this_dir, "annotations_to_stf.R"))
+source(file.path(.this_dir, "sample_annotation.R"))
 
 #' Build the tall `HTSeq counts` entity from merged count data
 #'
