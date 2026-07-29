@@ -1,0 +1,7 @@
+{
+  "comment": "The antisense-counts file is missing the S4 sample column that is present in sense-counts.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseq-rc", "version": "1.0" },
+  "expected_technical_error_regex": "Sample mismatch between sense and antisense counts files",
+  "expected_user_error_regex": "sense-counts and antisense-counts files do not have the same sample columns"
+}
