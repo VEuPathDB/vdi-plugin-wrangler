@@ -106,6 +106,55 @@ test_that("a genuinely entity-invalid first attempt (not a bad ID) is corrected 
   })
 })
 
+test_that("a first-attempt llm_api_error recovered by the retry produces a valid entity and prints nothing to STDOUT", {
+  # Regression test for the bug fixed in Task 8b, at the level that actually
+  # matters: generate_sample_entity()'s real two-attempt retry driving the
+  # real llm_text()/llm_json() code, not a stand-in for it.
+  #
+  # The public mock registry can't produce this scenario: llm_text() consults
+  # the mock queue *before* it would ever reach an API-failure branch, so a
+  # queued "annotate" mock would satisfy attempt 1 too, never exercising the
+  # llm_api_error path this test exists to cover -- and a mock response can
+  # never itself raise an error, only ever return canned text. So instead we
+  # fake httr::POST() -- the actual network boundary -- via testthat's
+  # local_mocked_bindings(): the first 3 calls (all of attempt 1's own
+  # internal retry loop inside llm_text(), max_attempts = 3) simulate a
+  # network failure, and the 4th call (attempt 2's first try) returns a
+  # well-formed 200 response. This drives llm_text() through its real
+  # network-error branch -- the exact code this task changed -- and then
+  # through its real success branch, with CLAUDE_API_KEY set to a dummy value
+  # so the missing-key branch (also real, but not what this test targets) is
+  # never hit.
+  ids <- c("S1", "S2")
+  post_calls <- 0
+  fake_post <- function(...) {
+    post_calls <<- post_calls + 1
+    if (post_calls <= 3) {
+      stop("simulated network failure")
+    }
+    inner_json <- as.character(jsonlite::toJSON(ann_for(ids), auto_unbox = TRUE))
+    outer_json <- as.character(jsonlite::toJSON(
+      list(content = list(list(text = inner_json))),
+      auto_unbox = TRUE
+    ))
+    structure(list(status_code = 200L, content = charToRaw(outer_json)), class = "response")
+  }
+  local_mocked_bindings(POST = fake_post, .package = "httr")
+
+  llm_mocks_init(tempfile()) # ensure "annotate" isn't served from the mock registry
+
+  entity <- NULL
+  withr::with_envvar(c(CLAUDE_API_KEY = "not-a-real-key-httr-is-mocked"), {
+    out <- capture.output({
+      entity <- generate_sample_entity(ids, "S1 infected, S2 control")
+    })
+  })
+
+  expect_equal(out, character(0))
+  expect_equal(post_calls, 4)
+  expect_setequal(entity %>% get_data() %>% pull(sample.ID), ids)
+})
+
 test_that("two failed attempts stop with a transformation error", {
   d <- mock_dir(list(annotate = list(ann_for(c("S1", "S9")), ann_for(c("S1", "S8")))))
   withr::with_envvar(c(WRANGLER_ALLOW_LLM_MOCKS = "1"), {

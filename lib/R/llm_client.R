@@ -96,6 +96,42 @@ llm_mocks_exhausted <- function() {
   trimws(trimmed)
 }
 
+#' Raise a classed `llm_api_error` condition for a Claude API failure
+#'
+#' Every failure path in `llm_text()` that reflects a genuine Claude API
+#' problem (missing key, unreachable network, non-2xx status after retries,
+#' or a malformed response body) raises this classed condition rather than
+#' calling `stop_unexpected_error()` directly.
+#'
+#' This deliberately does **not** write anything to STDOUT, unlike
+#' `stop_unexpected_error()`. `llm_text()` is called from inside
+#' `generate_sample_entity()` (see `lib/R/sample_annotation.R`), which wraps
+#' each of its two annotation attempts in its own `tryCatch()` so a failed
+#' first attempt can be retried. If a first-attempt API failure printed a
+#' user-facing "the wrangler received an error from the Claude API" message
+#' to STDOUT -- as `stop_unexpected_error()` does -- that message would still
+#' reach the uploader (VDI surfaces STDOUT as user feedback) even when the
+#' retry goes on to recover and the import succeeds. Raising a plain, silent
+#' condition here leaves the STDOUT write to whichever caller determines the
+#' failure is actually terminal.
+#'
+#' Any caller of `llm_text()`/`llm_json()` that is NOT already inside a
+#' `tryCatch()` covering this condition must catch `llm_api_error` itself and
+#' convert it to a proper `stop_*_error()` call -- otherwise the condition
+#' reaches `bin/wrangle.R` (which has no top-level error handler) as a raw,
+#' unreported R error with the wrong exit code. Do not "helpfully" route this
+#' back through `stop_unexpected_error()` here; that would reintroduce the
+#' premature-STDOUT-write bug this exists to prevent.
+#'
+#' @param message Technical error text -- identical to what used to be
+#'   passed as `technical_msg` to `stop_unexpected_error()` at each call site.
+.stop_llm_api_error <- function(message) {
+  stop(structure(
+    class = c("llm_api_error", "error", "condition"),
+    list(message = message, call = NULL)
+  ))
+}
+
 #' Call the Claude Messages API (or return a queued mock), returning raw text
 #'
 #' @param call_name Logical name for this call site, used for mock lookup and
@@ -118,10 +154,7 @@ llm_text <- function(call_name, model, system_prompt, user_prompt, max_tokens = 
 
   api_key <- Sys.getenv("CLAUDE_API_KEY")
   if (identical(api_key, "")) {
-    stop_unexpected_error(
-      user_msg = "The wrangler could not reach the Claude API because no API key is configured.",
-      technical_msg = "CLAUDE_API_KEY environment variable is not set"
-    )
+    .stop_llm_api_error("CLAUDE_API_KEY environment variable is not set")
   }
 
   body <- list(
@@ -155,10 +188,7 @@ llm_text <- function(call_name, model, system_prompt, user_prompt, max_tokens = 
         Sys.sleep(2^(attempt - 1))
         next
       }
-      stop_unexpected_error(
-        user_msg = "The wrangler could not reach the Claude API.",
-        technical_msg = paste("Network error calling Claude API:", last_error)
-      )
+      .stop_llm_api_error(paste("Network error calling Claude API:", last_error))
     }
 
     status <- httr::status_code(response)
@@ -166,13 +196,10 @@ llm_text <- function(call_name, model, system_prompt, user_prompt, max_tokens = 
       parsed <- httr::content(response, as = "parsed", type = "application/json", encoding = "UTF-8")
       text <- tryCatch(parsed$content[[1]]$text, error = function(e) NULL)
       if (is.null(text)) {
-        stop_unexpected_error(
-          user_msg = "The wrangler received an unexpected response from the Claude API.",
-          technical_msg = paste(
-            "Claude API response missing content[[1]]$text:",
-            as.character(jsonlite::toJSON(parsed, auto_unbox = TRUE))
-          )
-        )
+        .stop_llm_api_error(paste(
+          "Claude API response missing content[[1]]$text:",
+          as.character(jsonlite::toJSON(parsed, auto_unbox = TRUE))
+        ))
       }
       return(text)
     }
@@ -184,17 +211,11 @@ llm_text <- function(call_name, model, system_prompt, user_prompt, max_tokens = 
     }
 
     body_text <- httr::content(response, as = "text", encoding = "UTF-8")
-    stop_unexpected_error(
-      user_msg = "The wrangler received an error response from the Claude API.",
-      technical_msg = sprintf("Claude API returned HTTP %d: %s", status, body_text)
-    )
+    .stop_llm_api_error(sprintf("Claude API returned HTTP %d: %s", status, body_text))
   }
 
   # Unreachable, but keep R CMD check happy about a return path.
-  stop_unexpected_error(
-    user_msg = "The wrangler could not reach the Claude API.",
-    technical_msg = "Exhausted retries calling Claude API"
-  )
+  .stop_llm_api_error("Exhausted retries calling Claude API")
 }
 
 #' Call the Claude Messages API and parse the response as JSON

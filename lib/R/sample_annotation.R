@@ -23,6 +23,14 @@
 #' as `"labels_uninformative"` -- the safe direction, since it is the one
 #' that demands an explicit ID-to-metadata mapping be checked for.
 #'
+#' Unlike the two `llm_json("annotate", ...)` calls in
+#' `generate_sample_entity()`, this `llm_text()` call is not wrapped in a
+#' retry, so it must catch `llm_api_error` (see `lib/R/llm_client.R`) itself
+#' and convert it to a user-facing `stop_unexpected_error()` here --
+#' otherwise an API failure at this step would reach `bin/wrangle.R` (which
+#' has no top-level error handler) as a raw, unreported R error instead of a
+#' proper exit-255 message.
+#'
 #' @param sample_ids character vector of sample IDs from the count files
 #' @return `"labels_informative"` or `"labels_uninformative"`
 classify_sample_ids <- function(sample_ids) {
@@ -45,11 +53,19 @@ classify_sample_ids <- function(sample_ids) {
     "would require an explicit mapping to metadata elsewhere."
   )
 
-  reply <- trimws(llm_text(
-    "classify_labels",
-    model = "claude-haiku-4-5-20251001",
-    system_prompt = system_prompt,
-    user_prompt = user_prompt
+  reply <- trimws(tryCatch(
+    llm_text(
+      "classify_labels",
+      model = "claude-haiku-4-5-20251001",
+      system_prompt = system_prompt,
+      user_prompt = user_prompt
+    ),
+    llm_api_error = function(e) {
+      stop_unexpected_error(
+        user_msg = "The wrangler could not reach the Claude API to classify your sample IDs.",
+        technical_msg = conditionMessage(e)
+      )
+    }
   ))
 
   if (identical(reply, "labels_informative")) {
