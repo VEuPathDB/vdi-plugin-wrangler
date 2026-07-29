@@ -24,6 +24,10 @@ if (!dir.exists(original_wd) || original_wd == "") {
 # Load error helpers (needed by all wrangler scripts)
 source(file.path(original_wd, "lib/R/error_helpers.R"))
 
+# Allow wranglers to honour llm-mocks.json in test data directories.
+# Never set in production, so an uploaded mock file cannot divert a real run.
+Sys.setenv(WRANGLER_ALLOW_LLM_MOCKS = "1")
+
 # Configure validation to use both baseline and EDA profiles
 set_config(validation.profiles = c("baseline", "eda"))
 
