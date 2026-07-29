@@ -17,6 +17,11 @@ services:
 
       # Script Environment Config
       CUSTOM_PATH: ${CUSTOM_PATH}
+
+      # Claude API key for the rnaseq-rc datatype's LLM-assisted annotation
+      # step. Deliberately not required (`:?`) -- other datatypes never call
+      # the API, and must not fail to start just because this is unset.
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY}
       DATASET_INSTALL_ROOT: ${DATASET_INSTALL_ROOT:?}
       SITE_BUILD: ${SITE_BUILD:?}
 
