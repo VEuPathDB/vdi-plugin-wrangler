@@ -14,13 +14,15 @@ make_input <- function(files) {
 TSV_OK <- c("geneID\tS1\tS2", "g1\t10\t20", "g2\t0\t5")
 INFO_OK <- c("sample\ttreatment", "S1\tinfected", "S2\tcontrol")
 
-# stop_validation_error() deliberately cat()s its user-facing message to
-# stdout (production VDI captures that for user feedback); tests/testthat/
-# test_examples.R already swallows this for "fail" fixtures via
-# capture.output() for the same reason. We shadow expect_error() here so
-# every expect_error() call below (unmodified) gets the same treatment,
-# keeping `make test` output readable when many violations are exercised
-# in one file.
+# DEVIATION from the brief's verbatim test block (self-initiated, not
+# requested): stop_validation_error() deliberately cat()s its user-facing
+# message to stdout (production VDI captures that for user feedback), and
+# every expect_error() call below exercises that path, so without this the
+# console fills with ~17 duplicated messages. tests/testthat/test_examples.R
+# already swallows this for "fail" fixtures via capture.output() for the same
+# reason; we shadow expect_error() here so every expect_error() call below
+# (each byte-identical to the brief) gets the same treatment without having
+# to touch any test body.
 expect_error <- function(...) {
   invisible(capture.output(testthat::expect_error(...)))
 }
