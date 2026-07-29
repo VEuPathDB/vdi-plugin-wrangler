@@ -195,20 +195,27 @@ read_counts_long <- function(path) {
   # col_types. We want those cells to survive verbatim so our own validation
   # (below) can reject them with a helpful message.
   #
-  # suppressWarnings(): a row with fewer fields than the header (e.g. a
-  # trailing count accidentally deleted) makes readr emit an advisory
-  # "parsing issues" warning pointing the caller at problems(dat) -- of no
-  # use here since dat is never returned to the caller. readr still fills the
-  # short row's missing cell with "", which our own validation below rejects
-  # with a specific, actionable message naming the offending gene and sample.
-  raw <- suppressWarnings(readr::read_delim(
-    path,
-    delim = delim,
-    col_types = readr::cols(.default = "c"),
-    name_repair = "minimal",
-    trim_ws = FALSE,
-    na = character(0)
-  ))
+  # Muffle only "vroom_parse_issue": a row with fewer fields than the header
+  # (e.g. a trailing count accidentally deleted) makes readr emit this
+  # specific warning class, advising the caller to call problems(dat) -- of
+  # no use here since dat is never returned to the caller. readr still fills
+  # the short row's missing cell with "", which our own validation below
+  # rejects with a specific, actionable message naming the offending gene and
+  # sample. Deliberately narrow (vs. suppressWarnings()) so any other warning
+  # class -- e.g. from a future readr version, or from loosening col_types
+  # away from all-character -- still propagates instead of being silently
+  # dropped.
+  raw <- withCallingHandlers(
+    readr::read_delim(
+      path,
+      delim = delim,
+      col_types = readr::cols(.default = "c"),
+      name_repair = "minimal",
+      trim_ws = FALSE,
+      na = character(0)
+    ),
+    vroom_parse_issue = function(w) invokeRestart("muffleWarning")
+  )
 
   if (ncol(raw) < 1) {
     stop_validation_error(
