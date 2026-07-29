@@ -316,10 +316,27 @@ genes plus three HTSeq specials. The large-N fixture has 30+ sample columns and 
 **unreachable by construction**: validation gates 2 and 3 together force the generated sample-ID set
 to equal the authoritative set, and gate 1's `entity_id_no_duplicates` rules out duplicates, so
 `validate_study_entity_relationships` cannot find an orphan. Rather than write a test that can only
-pass vacuously, `18-awkward-gene-ids-OK` covers a linkage risk that *is* real: the transpose routes
-gene IDs through `pivot_wider(names_from = ...)`, making them column names momentarily, so gene IDs
-containing spaces or punctuation can be silently altered by name repair before becoming `Gene`
-values. Sample IDs are never exposed to this — they stay as values throughout.
+pass vacuously, `18-awkward-gene-ids-OK` guards the reading strategy described below.
+
+### Reading strategy: straight to long
+
+Production reads genes-in-rows, transposes to samples-in-rows via
+`pivot_longer()` + `pivot_wider(names_from = ...)`, then pivots back to tall. It needs the wide
+intermediate for WGCNA and for strandedness auto-detection; we need neither.
+
+We therefore go directly from genes-in-rows to long:
+
+```r
+pivot_longer(-Gene, names_to = "sample.ID", values_to = "Count")
+```
+
+This is simpler, avoids two pivots, and — importantly — never turns gene IDs into column names, so
+tibble name repair can never silently alter them. Sample IDs come from column *headers* and so do
+pass through `read_delim`'s name handling; they are compared against the sample entity by exact
+string, and `.name_repair = "minimal"` keeps them verbatim.
+
+`18-awkward-gene-ids-OK` uses gene IDs containing spaces and punctuation to pin this property, so a
+future refactor back to a wide intermediate fails loudly rather than corrupting gene IDs.
 
 Passing directories get `assert.R` files pinning entity shape, stable_ids and row counts. The
 existing harness otherwise only checks that import completed and that the expected number of cache
