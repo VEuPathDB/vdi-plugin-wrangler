@@ -1,0 +1,4 @@
+This experiment compares male and female mice at two timepoints after
+treatment. Two biological replicates were collected for each sex/timepoint
+combination: males were sampled 3 hours post-treatment, and females were
+sampled 6 hours post-treatment.
