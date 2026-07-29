@@ -1,4 +1,5 @@
 {
+  "comment": "This fixture documents that a vertical (transposed) CSV sample-info file is an accepted upload shape. It does NOT exercise format-specific parsing end-to-end: the deterministic code only reads sample-info as one opaque string and checks it with a format-blind grepl(fixed = TRUE); the `annotate` LLM call is mocked identically to fixture 01, so the mock -- not real extraction from this format -- produces the result. Genuine end-to-end coverage of free-form sample-info formats (via real models) is provided by rnaseq-rc-live/01-real-models-OK. This fixture still guards against a future format-specific parser choking on transposed input.",
   "test_expectation": "pass",
   "type": { "name": "rnaseq-rc", "version": "1.0" }
 }
