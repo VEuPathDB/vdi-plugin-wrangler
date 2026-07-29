@@ -1,0 +1,7 @@
+{
+  "comment": "Sample IDs S001-S004 are opaque codes (classify_labels mocked to labels_uninformative), but sample-info.txt only mentions S001, so S002-S004 have no anchor for annotation.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseq-rc", "version": "1.0" },
+  "expected_technical_error_regex": "absent from sample-info text: S002, S003, S004",
+  "expected_user_error_regex": "does not mention the following sample ID\\(s\\).*S002, S003, S004"
+}
