@@ -94,19 +94,19 @@ test_that("a sample-info file just under the size cap is accepted", {
   # at discovery time -- before any billable call -- rather than left
   # unbounded. Deliberately runtime-generated (strrep()) rather than a
   # checked-in ~100KB fixture file.
-  big <- strrep("a", SAMPLE_INFO_MAX_CHARS - 1)
+  big <- strrep("a", SAMPLE_INFO_MAX_BYTES - 1)
   d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = big))
   got <- discover_counts_files(d)
   expect_setequal(names(got$paths), c("unstranded", "sample_info"))
 })
 
 test_that("a sample-info file over the size cap is rejected, naming the limit", {
-  too_big <- strrep("a", SAMPLE_INFO_MAX_CHARS + 1)
+  too_big <- strrep("a", SAMPLE_INFO_MAX_BYTES + 1)
   d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = too_big))
   out <- capture.output(testthat::expect_error(discover_counts_files(d), "exceeds"))
   stdout_text <- paste(out, collapse = "\n")
   expect_match(stdout_text, "too large", fixed = TRUE)
-  expect_match(stdout_text, format(SAMPLE_INFO_MAX_CHARS, big.mark = ","), fixed = TRUE)
+  expect_match(stdout_text, format(SAMPLE_INFO_MAX_BYTES, big.mark = ","), fixed = TRUE)
 })
 
 test_that("an unrecognised data file is rejected", {
