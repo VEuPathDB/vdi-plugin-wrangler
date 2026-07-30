@@ -29,6 +29,20 @@ make_input_bytes <- function(files_raw) {
   d
 }
 
+# Writes a manifest for the given role -> filename pairs, matching the
+# contract: no header, role<TAB>filename, LF, trailing newline. writeLines()
+# gives LF endings and a trailing newline by default, which is what the
+# contract requires. Duplicate names are allowed here on purpose -- passing
+# the same role twice (e.g. write_manifest(d, "sense" = "a.tsv", "sense" =
+# "b.tsv")) is exactly how the duplicate-role test below builds its fixture.
+write_manifest <- function(dir, ...) {
+  entries <- c(...)
+  writeLines(
+    paste(names(entries), unname(entries), sep = "\t"),
+    file.path(dir, "manifest.tsv")
+  )
+}
+
 # DEVIATION from the brief's verbatim test block (self-initiated, not
 # requested): stop_validation_error() deliberately cat()s its user-facing
 # message to stdout (production VDI captures that for user feedback), and
@@ -43,22 +57,32 @@ expect_error <- function(...) {
 }
 
 test_that("unstranded input is discovered", {
-  d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
+  # Deliberately off the old canonical stem ("unstranded-counts.tsv"): if a
+  # leftover stem-matching path ever came back, this would fail instead of
+  # silently keeping the suite green.
+  d <- make_input(list("HTSeq_run3.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
+  write_manifest(d, "unstranded" = "HTSeq_run3.tsv", "sample-info" = "sample-info.txt")
   got <- discover_counts_files(d)
   expect_equal(got$mode, "unstranded")
   expect_setequal(names(got$paths), c("unstranded", "sample_info"))
+  expect_equal(basename(got$paths[["unstranded"]]), "HTSeq_run3.tsv")
 })
 
 test_that("stranded pair is discovered", {
-  d <- make_input(list("sense-counts.tsv" = TSV_OK, "antisense-counts.tsv" = TSV_OK,
+  d <- make_input(list("my_sense.tsv" = TSV_OK, "my_antisense.tsv" = TSV_OK,
                        "sample-info.txt" = INFO_OK))
+  write_manifest(d, "sense" = "my_sense.tsv", "antisense" = "my_antisense.tsv",
+                 "sample-info" = "sample-info.txt")
   got <- discover_counts_files(d)
   expect_equal(got$mode, "stranded")
   expect_setequal(names(got$paths), c("sense", "antisense", "sample_info"))
+  expect_equal(basename(got$paths[["sense"]]), "my_sense.tsv")
+  expect_equal(basename(got$paths[["antisense"]]), "my_antisense.tsv")
 })
 
 test_that("sample-info text is returned whole", {
-  d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
+  d <- make_input(list("my_counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
+  write_manifest(d, "unstranded" = "my_counts.tsv", "sample-info" = "sample-info.txt")
   got <- discover_counts_files(d)
   txt <- read_sample_info_text(got$paths[["sample_info"]])
   expect_length(txt, 1)
@@ -67,23 +91,40 @@ test_that("sample-info text is returned whole", {
 })
 
 test_that("sense without antisense is rejected", {
-  d <- make_input(list("sense-counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
-  expect_error(discover_counts_files(d), "antisense")
+  d <- make_input(list("my_sense.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
+  write_manifest(d, "sense" = "my_sense.tsv", "sample-info" = "sample-info.txt")
+  expect_error(discover_counts_files(d), "without antisense")
+})
+
+test_that("antisense without sense is rejected", {
+  d <- make_input(list("my_antisense.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
+  write_manifest(d, "antisense" = "my_antisense.tsv", "sample-info" = "sample-info.txt")
+  expect_error(discover_counts_files(d), "without sense")
 })
 
 test_that("unstranded alongside stranded is rejected", {
-  d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sense-counts.tsv" = TSV_OK,
-                       "antisense-counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
-  expect_error(discover_counts_files(d))
+  d <- make_input(list("my_uns.tsv" = TSV_OK, "my_sense.tsv" = TSV_OK,
+                       "my_antisense.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
+  write_manifest(d, "unstranded" = "my_uns.tsv", "sense" = "my_sense.tsv",
+                 "antisense" = "my_antisense.tsv", "sample-info" = "sample-info.txt")
+  expect_error(discover_counts_files(d), "unstranded and stranded")
+})
+
+test_that("no count file at all is rejected", {
+  d <- make_input(list("sample-info.txt" = INFO_OK))
+  write_manifest(d, "sample-info" = "sample-info.txt")
+  expect_error(discover_counts_files(d), "No unstranded or sense/antisense")
 })
 
 test_that("missing sample-info is rejected", {
-  d <- make_input(list("unstranded-counts.tsv" = TSV_OK))
+  d <- make_input(list("my_counts.tsv" = TSV_OK))
+  write_manifest(d, "unstranded" = "my_counts.tsv")
   expect_error(discover_counts_files(d), "sample-info")
 })
 
 test_that("empty sample-info is rejected", {
-  d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = character(0)))
+  d <- make_input(list("my_counts.tsv" = TSV_OK, "sample-info.txt" = character(0)))
+  write_manifest(d, "unstranded" = "my_counts.tsv", "sample-info" = "sample-info.txt")
   expect_error(discover_counts_files(d), "sample-info")
 })
 
@@ -95,30 +136,33 @@ test_that("a sample-info file just under the size cap is accepted", {
   # unbounded. Deliberately runtime-generated (strrep()) rather than a
   # checked-in ~100KB fixture file.
   big <- strrep("a", SAMPLE_INFO_MAX_BYTES - 1)
-  d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = big))
+  d <- make_input(list("my_counts.tsv" = TSV_OK, "sample-info.txt" = big))
+  write_manifest(d, "unstranded" = "my_counts.tsv", "sample-info" = "sample-info.txt")
   got <- discover_counts_files(d)
   expect_setequal(names(got$paths), c("unstranded", "sample_info"))
 })
 
 test_that("a sample-info file over the size cap is rejected, naming the limit", {
   too_big <- strrep("a", SAMPLE_INFO_MAX_BYTES + 1)
-  d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = too_big))
+  d <- make_input(list("my_counts.tsv" = TSV_OK, "sample-info.txt" = too_big))
+  write_manifest(d, "unstranded" = "my_counts.tsv", "sample-info" = "sample-info.txt")
   out <- capture.output(testthat::expect_error(discover_counts_files(d), "exceeds"))
   stdout_text <- paste(out, collapse = "\n")
   expect_match(stdout_text, "too large", fixed = TRUE)
   expect_match(stdout_text, format(SAMPLE_INFO_MAX_BYTES, big.mark = ","), fixed = TRUE)
 })
 
-test_that("an unrecognised data file is rejected", {
-  d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK,
-                       "counts.tsv" = TSV_OK))
-  expect_error(discover_counts_files(d), "counts.tsv")
-})
-
-test_that("a duplicated stem is rejected", {
-  d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "unstranded-counts.csv" = TSV_OK,
-                       "sample-info.txt" = INFO_OK))
-  expect_error(discover_counts_files(d))
+test_that("an unreferenced extra file is rejected", {
+  # Premise change from the pre-manifest suite: this test used to assert
+  # that a file named "counts.tsv" was rejected for having an unrecognised
+  # name. Under the manifest scheme a file called counts.tsv is perfectly
+  # valid *if the manifest lists it* -- filenames no longer carry meaning.
+  # What's actually rejected now is a data file the manifest doesn't
+  # mention at all, regardless of what it's called.
+  d <- make_input(list("my_counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK,
+                       "extra_stray.tsv" = TSV_OK))
+  write_manifest(d, "unstranded" = "my_counts.tsv", "sample-info" = "sample-info.txt")
+  expect_error(discover_counts_files(d), "not listed in the manifest")
 })
 
 test_that("counts are read to long format", {
@@ -176,10 +220,12 @@ test_that("malformed counts are rejected", {
 
 test_that("stranded files are merged into two count columns", {
   d <- make_input(list(
-    "sense-counts.tsv"     = c("geneID\tS1\tS2", "g1\t10\t20", "g2\t1\t2"),
-    "antisense-counts.tsv" = c("geneID\tS1\tS2", "g1\t3\t4",   "g2\t5\t6"),
+    "my_sense.tsv"     = c("geneID\tS1\tS2", "g1\t10\t20", "g2\t1\t2"),
+    "my_antisense.tsv" = c("geneID\tS1\tS2", "g1\t3\t4",   "g2\t5\t6"),
     "sample-info.txt" = INFO_OK
   ))
+  write_manifest(d, "sense" = "my_sense.tsv", "antisense" = "my_antisense.tsv",
+                 "sample-info" = "sample-info.txt")
   merged <- read_and_merge_counts(discover_counts_files(d))
   expect_named(merged, c("Gene", "sample.ID", "Sense.Count", "Antisense.Count"))
   expect_equal(nrow(merged), 4)
@@ -188,24 +234,29 @@ test_that("stranded files are merged into two count columns", {
 
 test_that("mismatched sample columns are rejected", {
   d <- make_input(list(
-    "sense-counts.tsv"     = c("geneID\tS1\tS2", "g1\t10\t20"),
-    "antisense-counts.tsv" = c("geneID\tS1",     "g1\t3"),
+    "my_sense.tsv"     = c("geneID\tS1\tS2", "g1\t10\t20"),
+    "my_antisense.tsv" = c("geneID\tS1",     "g1\t3"),
     "sample-info.txt" = INFO_OK
   ))
+  write_manifest(d, "sense" = "my_sense.tsv", "antisense" = "my_antisense.tsv",
+                 "sample-info" = "sample-info.txt")
   expect_error(read_and_merge_counts(discover_counts_files(d)), "sample")
 })
 
 test_that("mismatched gene sets are rejected", {
   d <- make_input(list(
-    "sense-counts.tsv"     = c("geneID\tS1", "g1\t10", "g2\t1"),
-    "antisense-counts.tsv" = c("geneID\tS1", "g1\t3"),
+    "my_sense.tsv"     = c("geneID\tS1", "g1\t10", "g2\t1"),
+    "my_antisense.tsv" = c("geneID\tS1", "g1\t3"),
     "sample-info.txt" = INFO_OK
   ))
+  write_manifest(d, "sense" = "my_sense.tsv", "antisense" = "my_antisense.tsv",
+                 "sample-info" = "sample-info.txt")
   expect_error(read_and_merge_counts(discover_counts_files(d)), "gene")
 })
 
 test_that("unstranded merge keeps a single Count column", {
-  d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
+  d <- make_input(list("my_counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
+  write_manifest(d, "unstranded" = "my_counts.tsv", "sample-info" = "sample-info.txt")
   merged <- read_and_merge_counts(discover_counts_files(d))
   expect_named(merged, c("Gene", "sample.ID", "Count"))
 })
@@ -303,9 +354,97 @@ test_that("a non-UTF-8 sample-info file does not crash the emptiness check", {
   # cleanly instead of crashing before read_sample_info_text() ever runs.
   text <- "sample\tnotes\nS1\tCollected by Müller lab\n"
   d <- make_input_bytes(list(
-    "unstranded-counts.tsv" = charToRaw(paste(TSV_OK, collapse = "\n")),
+    "my_counts.tsv" = charToRaw(paste(TSV_OK, collapse = "\n")),
     "sample-info.txt" = encode_as(text, "CP1252")
   ))
+  write_manifest(d, "unstranded" = "my_counts.tsv", "sample-info" = "sample-info.txt")
   got <- discover_counts_files(d)
   expect_setequal(names(got$paths), c("unstranded", "sample_info"))
+})
+
+# --- Task 3: manifest-driven discovery and its failure modes ---------------
+#
+# discover_counts_files() now requires a manifest.tsv declaring each file's
+# role instead of matching fixed filename stems, so uploaded files keep their
+# original names. Every manifest structural fault below shares one identical
+# user_msg (a generic "contact the helpdesk" message written to stdout via
+# cat()) -- see .MANIFEST_FAULT_USER_MSG in counts_files.R -- so the
+# discriminating assertion has to be on technical_msg, i.e. a plain
+# expect_error() regex, not the captured stdout.
+
+test_that("rejects a missing manifest", {
+  d <- make_input(list("my_counts.tsv" = TSV_OK))
+  expect_error(discover_counts_files(d), "No manifest.tsv")
+})
+
+test_that("rejects a manifest line with no tab", {
+  d <- make_input(list("my_counts.tsv" = TSV_OK))
+  writeLines("unstranded my_counts.tsv", file.path(d, "manifest.tsv"))
+  expect_error(discover_counts_files(d), "no tab separator")
+})
+
+test_that("rejects an unknown role", {
+  d <- make_input(list("my_counts.tsv" = TSV_OK, "si.txt" = INFO_OK))
+  write_manifest(d, "spliced" = "my_counts.tsv", "sample-info" = "si.txt")
+  expect_error(discover_counts_files(d), "unknown role")
+})
+
+test_that("rejects a duplicate role", {
+  d <- make_input(list("a.tsv" = TSV_OK, "b.tsv" = TSV_OK))
+  write_manifest(d, "sense" = "a.tsv", "sense" = "b.tsv")
+  expect_error(discover_counts_files(d), "duplicate role")
+})
+
+test_that("rejects a dangling manifest reference", {
+  d <- make_input(list("sample-info.txt" = INFO_OK))
+  write_manifest(d, "unstranded" = "absent.tsv", "sample-info" = "sample-info.txt")
+  expect_error(discover_counts_files(d), "not present")
+})
+
+test_that("accepts a filename containing spaces", {
+  # This is the case a naive strsplit(line, "\\s+") would break: splitting
+  # the manifest line on the FIRST tab only, rather than on whitespace, is
+  # exactly what makes spaces in filenames safe.
+  d <- make_input(list("my counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
+  write_manifest(d, "unstranded" = "my counts.tsv", "sample-info" = "sample-info.txt")
+  got <- discover_counts_files(d)
+  expect_equal(basename(got$paths[["unstranded"]]), "my counts.tsv")
+})
+
+test_that("a .tab extension is accepted", {
+  # ".tab" is newly accepted alongside .txt/.tsv/.csv.
+  d <- make_input(list("my_counts.tab" = TSV_OK, "sample-info.txt" = INFO_OK))
+  write_manifest(d, "unstranded" = "my_counts.tab", "sample-info" = "sample-info.txt")
+  got <- discover_counts_files(d)
+  expect_equal(basename(got$paths[["unstranded"]]), "my_counts.tab")
+})
+
+test_that("a manifest line ending in a tab (empty filename) is rejected", {
+  d <- make_input(list("my_counts.tsv" = TSV_OK))
+  writeLines("unstranded\t", file.path(d, "manifest.tsv"))
+  expect_error(discover_counts_files(d), "empty filename")
+})
+
+test_that("the same file listed under two roles is rejected", {
+  # Left undetected, this would silently produce a study where
+  # Sense.Count == Antisense.Count on every row -- a real
+  # scientific-correctness failure, not merely a cosmetic one.
+  d <- make_input(list("counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
+  write_manifest(d, "sense" = "counts.tsv", "antisense" = "counts.tsv",
+                 "sample-info" = "sample-info.txt")
+  expect_error(discover_counts_files(d), "more than one role")
+})
+
+test_that("a manifest containing invalid UTF-8 fails cleanly, not with a crash", {
+  # Regression test for a Task 2 review finding: without the explicit
+  # validUTF8() guard in .parse_manifest(), an invalid byte here degrades
+  # regexpr(..., fixed = TRUE) silently to -1 (misreported as "no tab
+  # separator"), or makes nchar() hard-error outright -- an uncaught R abort,
+  # not a validation error. A manifest is UTF-8 by contract (we generate it),
+  # so invalid bytes indicate a structural fault, not a content fault. Built
+  # with writeBin(), since a Latin-1 0xE9 byte can't be produced by
+  # writeLines() writing in the process's native encoding.
+  bad_line <- c(charToRaw("unstranded\tHTSeq_run"), as.raw(0xE9), charToRaw(".tsv\n"))
+  d <- make_input_bytes(list("manifest.tsv" = bad_line))
+  expect_error(discover_counts_files(d), "invalid UTF-8")
 })
