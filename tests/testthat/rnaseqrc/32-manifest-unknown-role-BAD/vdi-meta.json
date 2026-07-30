@@ -1,0 +1,7 @@
+{
+  "comment": "manifest.tsv lists a role token ('metadata') that is not one of sense/antisense/unstranded/sample-info.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "Manifest contains unknown role\\(s\\).*metadata",
+  "expected_user_error_regex": "There was a problem with the structure of your upload"
+}

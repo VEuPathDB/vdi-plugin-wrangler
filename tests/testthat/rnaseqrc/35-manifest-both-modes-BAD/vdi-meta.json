@@ -1,0 +1,7 @@
+{
+  "comment": "manifest.tsv lists an unstranded role together with sense and antisense roles, all pointing at real, well-formed files -- an internally contradictory upload that must be rejected regardless of any single file's validity.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "Both unstranded and stranded count files present",
+  "expected_user_error_regex": "There was a problem with the structure of your upload"
+}

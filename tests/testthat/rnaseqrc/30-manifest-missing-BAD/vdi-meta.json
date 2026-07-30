@@ -1,0 +1,7 @@
+{
+  "comment": "No manifest.tsv is present in the input directory at all, so discover_counts_files() fails at the very first check, before any parsing.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "No manifest\\.tsv found",
+  "expected_user_error_regex": "There was a problem with the structure of your upload"
+}
