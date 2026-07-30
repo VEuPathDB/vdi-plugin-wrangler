@@ -74,7 +74,7 @@ The system is extensible via datatype-specific wrangler scripts:
 - Each datatype has its own wrangler in `lib/R/wrangle-<datatype>.R`
 - Each wrangler must export a `wrangle(input_dir)` function that returns a study object
 - The datatype is determined from `vdi-meta.json` in the input directory (defaults to "phenotype")
-- Available datatypes: `phenotype`, `stf`, `isasimple`, `rnaseq-rc`
+- Available datatypes: `phenotype`, `stf`, `isasimple`, `rnaseqrc`
 
 **Phenotype Wrangler** (`lib/R/wrangle-phenotype.R`):
 - Expects exactly one `.txt` or `.tsv` file
@@ -86,12 +86,12 @@ The system is extensible via datatype-specific wrangler scripts:
 **STF Wrangler** (`lib/R/wrangle-stf.R`):
 - Simple wrapper around `study_from_stf(input_dir)` from the study.wrangler package
 
-**rnaseq-rc Wrangler** (`lib/R/wrangle-rnaseq-rc.R`):
+**rnaseqrc Wrangler** (`lib/R/wrangle-rnaseqrc.R`):
 - Bulk RNA-seq counts (a `sense-counts`/`antisense-counts` pair, or a single `unstranded-counts`
   file) plus a free-form `sample-info` file. Builds a `sample` root entity (via an LLM-assisted
   annotation step) and a tall `HTSeq counts` child entity from the deterministically-parsed counts.
   See `doc/rnaseq-rc.md` for the user-facing format contract.
-- The orchestrator (`wrangle-rnaseq-rc.R`) sources its own sibling modules via
+- The orchestrator (`wrangle-rnaseqrc.R`) sources its own sibling modules via
   `this.path::this.dir()` (see below), since `bin/wrangle.R` only sources
   `lib/R/wrangle-<datatype>.R` itself. It sequences the modules below and owns the error taxonomy;
   it must not reimplement anything from them.
@@ -112,7 +112,7 @@ The system is extensible via datatype-specific wrangler scripts:
   ever consulted when a test has explicitly opted in. `tests/testthat/test_examples.R` sets
   `WRANGLER_ALLOW_LLM_MOCKS=1` for the whole suite.
 - **`-live` directory convention**: any top-level datatype directory under `tests/testthat/`
-  suffixed `-live` (e.g. `rnaseq-rc-live/`) makes real, billable Claude API calls instead of using
+  suffixed `-live` (e.g. `rnaseqrc-live/`) makes real, billable Claude API calls instead of using
   mocks, and is skipped by `test_examples.R` unless `WRANGLER_LLM_LIVE=1` is set. Do not run this
   path casually — it costs real money.
 
@@ -123,7 +123,7 @@ Key R packages (installed in Dockerfile):
 - `study.wrangler` - Core VEuPathDB study wrangling functionality
 - `veupathUtils` - VEuPathDB utilities
 - `plot.data` - Provides `binWidth` function and data visualization
-- `this.path` - Lets `lib/R/wrangle-rnaseq-rc.R` resolve its sibling `source()` calls via
+- `this.path` - Lets `lib/R/wrangle-rnaseqrc.R` resolve its sibling `source()` calls via
   `this.path::this.dir()`, independent of the caller's working directory
 
 Key Perl modules:
