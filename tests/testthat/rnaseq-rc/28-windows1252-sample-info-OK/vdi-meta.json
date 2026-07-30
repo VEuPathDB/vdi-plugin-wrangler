@@ -1,0 +1,4 @@
+{
+  "test_expectation": "pass",
+  "type": { "name": "rnaseq-rc", "version": "1.0" }
+}

@@ -14,6 +14,21 @@ make_input <- function(files) {
 TSV_OK <- c("geneID\tS1\tS2", "g1\t10\t20", "g2\t0\t5")
 INFO_OK <- c("sample\ttreatment", "S1\tinfected", "S2\tcontrol")
 
+# Encodes a UTF-8 R string as raw bytes in `encoding` (e.g. "CP1252",
+# "ISO-8859-1", "UTF-16LE"), for building non-UTF-8 fixtures byte-for-byte
+# without depending on the test process's own native encoding.
+encode_as <- function(text, encoding) {
+  iconv(text, from = "UTF-8", to = encoding, toRaw = TRUE)[[1]]
+}
+
+# Like make_input(), but writes raw bytes -- needed for non-UTF-8 fixtures,
+# since writeLines() always writes in the process's native encoding.
+make_input_bytes <- function(files_raw) {
+  d <- tempfile("counts_bytes_"); dir.create(d)
+  for (nm in names(files_raw)) writeBin(files_raw[[nm]], file.path(d, nm))
+  d
+}
+
 # DEVIATION from the brief's verbatim test block (self-initiated, not
 # requested): stop_validation_error() deliberately cat()s its user-facing
 # message to stdout (production VDI captures that for user feedback), and
@@ -193,4 +208,104 @@ test_that("unstranded merge keeps a single Count column", {
   d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
   merged <- read_and_merge_counts(discover_counts_files(d))
   expect_named(merged, c("Gene", "sample.ID", "Count"))
+})
+
+# --- Task 10: encoding policy parity ---------------------------------------
+#
+# read_counts_long() used to call readr::read_delim() with no `locale`,
+# silently assuming UTF-8 -- unlike phenotype/stf/isasimple, which get
+# study.wrangler's detect_file_encoding() threaded through for free via
+# entity_from_file()/entity_from_stf(). These pin that the same non-UTF-8
+# bytes that already pass as those datatypes now also pass here.
+
+test_that("an ISO-8859-1 counts file decodes non-ASCII gene IDs", {
+  text <- "geneID\tS1\tS2\ngene_ü\t10\t20\ngene_é\t1\t2\n"
+  d <- make_input_bytes(list(
+    "unstranded-counts.tsv" = encode_as(text, "ISO-8859-1")
+  ))
+  got <- read_counts_long(file.path(d, "unstranded-counts.tsv"))
+  expect_setequal(got$Gene, c("gene_ü", "gene_é"))
+})
+
+test_that("a Windows-1252 counts file decodes non-ASCII gene IDs", {
+  # euro sign (0x80) is Windows-1252-specific -- undefined in ISO-8859-1 --
+  # so this also pins that detect_file_encoding() tells the two apart.
+  text <- "geneID\tS1\tS2\ngene_ü\t10\t20\ngene_€\t1\t2\n"
+  d <- make_input_bytes(list(
+    "unstranded-counts.tsv" = encode_as(text, "CP1252")
+  ))
+  got <- read_counts_long(file.path(d, "unstranded-counts.tsv"))
+  expect_setequal(got$Gene, c("gene_ü", "gene_€"))
+})
+
+test_that("a UTF-16 counts file (BOM, alternating NULs) decodes non-ASCII gene IDs", {
+  # Regression test: .detect_counts_delimiter() used to read the raw,
+  # undecoded bytes to sniff the delimiter. For UTF-16 those bytes don't
+  # contain a lone tab byte -- each ASCII byte is interleaved with a NUL --
+  # so the sniff silently misdetected comma and the whole parse fell apart
+  # further downstream. Greek letters (outside Windows-1252/ISO-8859-1)
+  # prove genuine Unicode decoding, not just a Latin-1 special case.
+  text <- "geneID\tS1\tS2\ngene_β\t10\t20\ngene_Ω\t1\t2\n"
+  # Prepend a UTF-16LE BOM so detect_file_encoding() takes the BOM branch
+  # (encode_as() alone doesn't add one).
+  utf16_bytes <- c(as.raw(c(0xFF, 0xFE)), encode_as(text, "UTF-16LE"))
+  d <- make_input_bytes(list("unstranded-counts.tsv" = utf16_bytes))
+
+  got <- read_counts_long(file.path(d, "unstranded-counts.tsv"))
+  expect_setequal(got$Gene, c("gene_β", "gene_Ω"))
+})
+
+test_that("read_sample_info_text transcodes Windows-1252 to genuine UTF-8", {
+  text <- "sample\tnotes\nS1\tCollected by Müller lab\n"
+  d <- make_input_bytes(list("sample-info.txt" = encode_as(text, "CP1252")))
+  got <- read_sample_info_text(file.path(d, "sample-info.txt"))
+  expect_equal(Encoding(got), "UTF-8")
+  expect_true(validEnc(got))
+  expect_match(got, "Müller", fixed = TRUE)
+})
+
+test_that("read_sample_info_text transcodes UTF-16 to genuine UTF-8", {
+  text <- "sample\tnotes\nS1\tCollected by Müller lab\n"
+  raw <- encode_as(text, "UTF-16LE")
+  d <- make_input_bytes(list("sample-info.txt" = c(as.raw(c(0xFF, 0xFE)), raw)))
+  got <- read_sample_info_text(file.path(d, "sample-info.txt"))
+  expect_equal(Encoding(got), "UTF-8")
+  expect_true(validEnc(got))
+  expect_match(got, "Müller", fixed = TRUE)
+})
+
+test_that("a transcoded sample-info string survives jsonlite::toJSON verbatim", {
+  # Direct proof of the final review's Minor 7: this is exactly what
+  # llm_text() (lib/R/llm_client.R) does with the annotation prompt before
+  # POSTing it. Before the fix, read_sample_info_text() left this string's
+  # encoding as "unknown" over genuinely non-UTF-8 bytes; jsonlite::toJSON()
+  # then embedded the raw invalid bytes verbatim as mojibake instead of the
+  # real character. Round-tripping through toJSON()/fromJSON() here proves
+  # the fixed text survives with the accented character intact, not just
+  # that toJSON() doesn't throw.
+  text <- "sample\tnotes\nS1\tCollected by Müller lab\n"
+  d <- make_input_bytes(list("sample-info.txt" = encode_as(text, "CP1252")))
+  got <- read_sample_info_text(file.path(d, "sample-info.txt"))
+
+  body <- list(model = "m", messages = list(list(role = "user", content = got)))
+  j <- jsonlite::toJSON(body, auto_unbox = TRUE)
+  round_tripped <- jsonlite::fromJSON(j, simplifyVector = FALSE)
+  expect_match(round_tripped$messages[[1]]$content, "Müller", fixed = TRUE)
+})
+
+test_that("a non-UTF-8 sample-info file does not crash the emptiness check", {
+  # Regression test: discover_counts_files() used to check for a blank
+  # sample-info file with trimws(sample_info_lines) == "", on the raw,
+  # not-yet-decoded bytes. trimws() hard-errors ("input string N is invalid
+  # UTF-8") on genuinely non-UTF-8 bytes, rather than just failing the
+  # validation check -- an uncaught R error, not a user-facing message. This
+  # pins that a non-empty Windows-1252 sample-info file is discovered
+  # cleanly instead of crashing before read_sample_info_text() ever runs.
+  text <- "sample\tnotes\nS1\tCollected by Müller lab\n"
+  d <- make_input_bytes(list(
+    "unstranded-counts.tsv" = charToRaw(paste(TSV_OK, collapse = "\n")),
+    "sample-info.txt" = encode_as(text, "CP1252")
+  ))
+  got <- discover_counts_files(d)
+  expect_setequal(names(got$paths), c("unstranded", "sample_info"))
 })

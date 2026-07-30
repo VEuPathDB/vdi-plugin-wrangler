@@ -101,7 +101,16 @@ discover_counts_files <- function(input_dir) {
   }
 
   sample_info_lines <- readLines(paths[["sample_info"]], warn = FALSE)
-  if (length(sample_info_lines) == 0 || all(trimws(sample_info_lines) == "")) {
+  # `useBytes = TRUE`, not `trimws()`: this file hasn't been decoded to a
+  # known encoding yet (that only happens later, in read_sample_info_text()),
+  # so for a Windows-1252/ISO-8859-1 upload these are raw bytes R's UTF-8
+  # locale considers invalid. `trimws()` calls a locale-aware regex engine
+  # that hard-errors ("input string N is invalid UTF-8") on such bytes --
+  # not a validation failure, an uncaught R error. `useBytes = TRUE` matches
+  # the ASCII whitespace pattern byte-for-byte without requiring the input to
+  # be valid in any particular multibyte encoding first.
+  if (length(sample_info_lines) == 0 ||
+      all(grepl("^[[:space:]]*$", sample_info_lines, useBytes = TRUE))) {
     stop_validation_error(
       user_msg = paste(
         "Your sample-info file is empty. Please provide sample metadata",
@@ -199,11 +208,34 @@ discover_counts_files <- function(input_dir) {
 
 #' Read a sample-info file as a single whole-file string
 #'
+#' Detects and transcodes to UTF-8, exactly like the other datatypes
+#' (`phenotype`, `stf`, `isasimple`) do via study.wrangler's
+#' `entity_from_file()`/`entity_from_stf()`. This file's content is never
+#' parsed for structure -- it is embedded verbatim into an LLM prompt (see
+#' `annotation_prompt()` in `lib/R/sample_annotation.R`) -- but the Anthropic
+#' API request body is JSON, which must be valid UTF-8. A bare `readLines()`
+#' on Windows-1252 or UTF-16 bytes leaves the resulting string's declared
+#' encoding as "unknown" over genuinely non-UTF-8 bytes: string operations
+#' such as `grepl()` (see `check_ids_present_in_sample_info()`) then warn
+#' "invalid in this locale" and silently return `FALSE` even for a real
+#' match, and `jsonlite::toJSON()` embeds the raw invalid bytes verbatim --
+#' producing a request the API may reject, or silent mojibake it accepts --
+#' neither of which is the uploader's fault (final review's Minor 7).
+#'
+#' `readr::read_lines()` with an explicit locale is used rather than base
+#' `readLines(path, encoding = enc)`: base R only honours `encoding` for an
+#' already-open connection (e.g. `file(path, encoding = enc)`) -- passed a
+#' bare path string, as here, it silently ignores `encoding` and returns the
+#' raw undecoded bytes. readr decodes straight to genuine UTF-8
+#' (`Encoding() == "UTF-8"`), matching what `read_counts_long()` gets from
+#' `readr::read_delim()` with the same locale.
+#'
 #' @param path Path to the sample-info file
 #' @return length-1 character vector containing the whole file, with
-#'   newlines preserved between lines
+#'   newlines preserved between lines, transcoded to UTF-8
 read_sample_info_text <- function(path) {
-  lines <- readLines(path, warn = FALSE)
+  enc <- study.wrangler::detect_file_encoding(path)
+  lines <- readr::read_lines(path, locale = readr::locale(encoding = enc))
   paste(lines, collapse = "\n")
 }
 
@@ -212,10 +244,25 @@ read_sample_info_text <- function(path) {
 #' Reads the first line only: if it contains a tab, the file is tab-delimited,
 #' otherwise comma-delimited.
 #'
+#' `encoding` must be supplied for this to work on a non-UTF-8 file: a bare
+#' `readLines(path, n = 1)` reads raw undecoded bytes, and for UTF-16 those
+#' bytes don't contain a literal tab byte with nothing else around it (each
+#' ASCII byte is interleaved with a NUL), so R's locale-aware `grepl()` can't
+#' match against it and (since the raw bytes are also invalid in a UTF-8
+#' locale) warns "invalid in this locale" and returns `FALSE` -- silently
+#' misdetecting a tab-delimited UTF-16 file as comma-delimited. Opening the
+#' file through a `file()` connection with the detected encoding transcodes
+#' it to the native encoding first, same as `read_sample_info_text()` gets
+#' from `readr::read_lines()`.
+#'
 #' @param path Path to the counts file
+#' @param encoding Encoding to assume for `path`, e.g. as returned by
+#'   `study.wrangler::detect_file_encoding()`
 #' @return "\t" or ","
-.detect_counts_delimiter <- function(path) {
-  first_line <- readLines(path, n = 1, warn = FALSE)
+.detect_counts_delimiter <- function(path, encoding) {
+  con <- file(path, open = "r", encoding = encoding)
+  on.exit(close(con), add = TRUE)
+  first_line <- readLines(con, n = 1, warn = FALSE)
   if (grepl("\t", first_line, fixed = TRUE)) "\t" else ","
 }
 
@@ -231,7 +278,17 @@ read_sample_info_text <- function(path) {
 #' @param path Path to a sense-counts, antisense-counts or unstranded-counts file
 #' @return tibble with columns `Gene` (chr), `sample.ID` (chr), `Count` (int)
 read_counts_long <- function(path) {
-  delim <- .detect_counts_delimiter(path)
+  # Detect and pass through the file's actual encoding, exactly like the
+  # other datatypes (phenotype, stf, isasimple) get via study.wrangler's
+  # entity_from_file()/entity_from_stf() -- see also read_sample_info_text()
+  # above. Without this, read_delim() silently assumes UTF-8: a UTF-16
+  # counts file (BOM plus alternating NULs) reads as garbage, and a
+  # Windows-1252 file with an accented sample column name gets mangled.
+  # Uploaders have no way to know rnaseq-rc had a different encoding policy
+  # from every other datatype in this plugin. Detected once and reused for
+  # delimiter sniffing below, since that needs it too.
+  enc <- study.wrangler::detect_file_encoding(path)
+  delim <- .detect_counts_delimiter(path, enc)
 
   # na = character(0): readr's `na` matching (default c("", "NA")) happens
   # on the raw strings *before* type conversion, so it would silently turn
@@ -256,7 +313,8 @@ read_counts_long <- function(path) {
       col_types = readr::cols(.default = "c"),
       name_repair = "minimal",
       trim_ws = FALSE,
-      na = character(0)
+      na = character(0),
+      locale = readr::locale(encoding = enc)
     ),
     vroom_parse_issue = function(w) invokeRestart("muffleWarning")
   )
