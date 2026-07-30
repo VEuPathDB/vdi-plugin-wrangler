@@ -152,6 +152,28 @@ llm_text <- function(call_name, model, system_prompt, user_prompt, max_tokens = 
     return(as.character(jsonlite::toJSON(value, auto_unbox = TRUE)))
   }
 
+  # Fail-closed test guard: WRANGLER_ALLOW_LLM_MOCKS=1 only *permits* mocks,
+  # it does not *forbid* a real call when no queue exists for this
+  # call_name -- a forgotten llm-mocks.json, a typo'd call_name, or a defect
+  # letting a "should fail earlier" fixture reach this point would otherwise
+  # fall straight through to a real, billable httr::POST(). Set only by the
+  # test harness (tests/testthat/test_examples.R), per example, never in
+  # production -- see that file for why it must be per-example rather than
+  # process-wide (the opt-in `-live` fixtures share this R process with
+  # every other fixture). Checked before the API key so it fires even when
+  # a real CLAUDE_API_KEY is present in the environment (as it now is for
+  # every `make test` run, per docker-compose.yml).
+  if (identical(Sys.getenv("WRANGLER_LLM_OFFLINE"), "1")) {
+    stop(sprintf(
+      paste(
+        "llm_text: refusing to make a real Claude API call for call_name",
+        "'%s' because WRANGLER_LLM_OFFLINE=1 -- add a queued response for",
+        "this call_name to the test's llm-mocks.json"
+      ),
+      call_name
+    ))
+  }
+
   api_key <- Sys.getenv("CLAUDE_API_KEY")
   if (identical(api_key, "")) {
     .stop_llm_api_error("CLAUDE_API_KEY environment variable is not set")

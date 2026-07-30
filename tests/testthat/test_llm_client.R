@@ -63,8 +63,16 @@ test_that("llm_text raises a silent llm_api_error on an API failure (no STDOUT w
   # first-attempt failure is actually terminal (its retry may still recover).
   # The missing-API-key path is used here because it reaches the API-failure
   # branch deterministically, with no network call and no mock involved.
+  #
+  # WRANGLER_LLM_OFFLINE is forced off here because this test deliberately
+  # exercises the real-call code path (the missing-key branch) -- if
+  # test_examples.R happened to run first in this session and leave
+  # WRANGLER_LLM_OFFLINE=1 set (it sets it per-example, not scoped, so it
+  # persists as process-global state after its loop ends), the offline
+  # guard added for finding 3 would short-circuit before ever reaching the
+  # branch this test targets.
   llm_mocks_init(tempfile()) # clear any queued mocks left over by earlier tests
-  withr::with_envvar(c(CLAUDE_API_KEY = ""), {
+  withr::with_envvar(c(CLAUDE_API_KEY = "", WRANGLER_LLM_OFFLINE = ""), {
     result <- NULL
     out <- capture.output(
       result <- tryCatch(llm_text("classify", "m", "s", "u"), error = function(e) e)
@@ -72,6 +80,29 @@ test_that("llm_text raises a silent llm_api_error on an API failure (no STDOUT w
     expect_equal(out, character(0))
     expect_s3_class(result, "llm_api_error")
     expect_match(conditionMessage(result), "CLAUDE_API_KEY", fixed = TRUE)
+  })
+})
+
+test_that("WRANGLER_LLM_OFFLINE refuses a real API call and names the call_name", {
+  # Regression test for finding 3: `make test` runs inside a container that
+  # docker-compose.yml now hands a real CLAUDE_API_KEY, and
+  # WRANGLER_ALLOW_LLM_MOCKS=1 only *permits* mocks -- it doesn't *forbid* a
+  # real call when no queue exists for a call_name (a forgotten mocks file,
+  # a typo'd call_name, or a defect reaching this code from a fixture that
+  # should have failed earlier). This is the fail-closed backstop:
+  # WRANGLER_LLM_OFFLINE=1 must stop the request before it ever reaches
+  # httr::POST, regardless of whether an API key happens to be set.
+  llm_mocks_init(tempfile()) # no queue for any call_name
+  withr::with_envvar(c(WRANGLER_LLM_OFFLINE = "1", CLAUDE_API_KEY = "a-real-looking-key"), {
+    expect_error(llm_text("some_new_call_site", "m", "s", "u"), "some_new_call_site")
+  })
+})
+
+test_that("WRANGLER_LLM_OFFLINE does not block a queued mock", {
+  d <- make_mock_dir('{"classify": ["labels_informative"]}')
+  withr::with_envvar(c(WRANGLER_ALLOW_LLM_MOCKS = "1", WRANGLER_LLM_OFFLINE = "1"), {
+    llm_mocks_init(d)
+    expect_equal(llm_text("classify", "m", "s", "u"), "labels_informative")
   })
 })
 

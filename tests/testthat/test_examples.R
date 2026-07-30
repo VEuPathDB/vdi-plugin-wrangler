@@ -63,6 +63,19 @@ for (datatype in datatypes) {
 
       example_dir <- file.path(datatype, example)
 
+      # Fail-closed guard (finding 3): WRANGLER_ALLOW_LLM_MOCKS=1 above only
+      # *permits* mocks, it does not *forbid* llm_text() from falling
+      # through to a real, billable API call when no mock queue exists for
+      # a call_name -- and docker-compose.yml now hands `make test` a real
+      # CLAUDE_API_KEY. WRANGLER_LLM_OFFLINE=1 makes llm_text() refuse that
+      # fall-through outright (see lib/R/llm_client.R). Set per-example,
+      # keyed on the un-overridden `datatype` (the directory name, before
+      # any vdi-meta.json `type` override below) rather than once for the
+      # whole process, because the opt-in `*-live` fixtures -- which must
+      # make real calls -- share this same R session and this same for-loop
+      # with every offline fixture.
+      Sys.setenv(WRANGLER_LLM_OFFLINE = if (grepl("-live$", datatype)) "" else "1")
+
       # Most tests we expect to complete without errors
       # however, you can set `"test_expectation": "fail"` in the
       # vdi-meta.json file within the test data directory if you like
