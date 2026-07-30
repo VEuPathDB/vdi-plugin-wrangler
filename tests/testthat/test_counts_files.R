@@ -72,6 +72,28 @@ test_that("empty sample-info is rejected", {
   expect_error(discover_counts_files(d), "sample-info")
 })
 
+test_that("a sample-info file just under the size cap is accepted", {
+  # Regression test for finding 4: sample-info is the only unbounded
+  # user-supplied input that reaches a paid Claude API call (see
+  # generate_sample_entity() in lib/R/sample_annotation.R), so it is capped
+  # at discovery time -- before any billable call -- rather than left
+  # unbounded. Deliberately runtime-generated (strrep()) rather than a
+  # checked-in ~100KB fixture file.
+  big <- strrep("a", SAMPLE_INFO_MAX_CHARS - 1)
+  d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = big))
+  got <- discover_counts_files(d)
+  expect_setequal(names(got$paths), c("unstranded", "sample_info"))
+})
+
+test_that("a sample-info file over the size cap is rejected, naming the limit", {
+  too_big <- strrep("a", SAMPLE_INFO_MAX_CHARS + 1)
+  d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = too_big))
+  out <- capture.output(testthat::expect_error(discover_counts_files(d), "exceeds"))
+  stdout_text <- paste(out, collapse = "\n")
+  expect_match(stdout_text, "too large", fixed = TRUE)
+  expect_match(stdout_text, format(SAMPLE_INFO_MAX_CHARS, big.mark = ","), fixed = TRUE)
+})
+
 test_that("an unrecognised data file is rejected", {
   d <- make_input(list("unstranded-counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK,
                        "counts.tsv" = TSV_OK))

@@ -16,6 +16,19 @@
   "sample-info"        = "sample_info"
 )
 
+#' Maximum accepted size of the sample-info file, in characters
+#'
+#' `sample-info` is the only unbounded user-supplied input that reaches a
+#' paid Claude API call (see `generate_sample_entity()` in
+#' `lib/R/sample_annotation.R`), and on the retry path it is interpolated
+#' into two separate Sonnet prompts -- so an unbounded sample-info file is a
+#' token-spend vector. 100,000 is deliberately generous, not tight: a very
+#' long manuscript Methods section (~5,000 words) is around 30,000
+#' characters, so this leaves roughly 3x headroom while still capping any
+#' single call at roughly 25k input tokens. Do not tighten this -- the point
+#' is to stop abuse, not to constrain legitimate uploads.
+SAMPLE_INFO_MAX_CHARS <- 100000L
+
 .COUNTS_FILE_ACCEPTED_NAMES_MSG <- paste(
   "Count files must be named sense-counts and antisense-counts, or",
   "unstranded-counts, with a .txt, .tsv or .csv extension. Sample metadata",
@@ -95,6 +108,37 @@ discover_counts_files <- function(input_dir) {
         "describing your samples."
       ),
       technical_msg = paste("Empty sample-info file:", paths[["sample_info"]]),
+      file = paths[["sample_info"]]
+    )
+  }
+
+  # Measured in bytes (`nchar(..., type = "bytes")`), not R's default
+  # "chars" count, to stay correct regardless of the sample-info file's
+  # encoding -- this repo has explicit Latin-1/UTF-16 encoding tests
+  # elsewhere (tests/testthat/isasimple), so a sample-info file can
+  # legitimately be non-ASCII, and a naive character count depends on the
+  # content's encoding being correctly declared to be meaningful at all. A
+  # byte count needs no such assumption. It is also, if anything, a
+  # slightly more conservative proxy for actual token cost than a
+  # code-point count would be, since multi-byte text tends to cost more
+  # tokens per character than ASCII -- never fewer.
+  sample_info_text <- paste(sample_info_lines, collapse = "\n")
+  sample_info_size <- nchar(sample_info_text, type = "bytes")
+  if (sample_info_size > SAMPLE_INFO_MAX_CHARS) {
+    stop_validation_error(
+      user_msg = paste0(
+        "Your sample-info file is too large (", format(sample_info_size, big.mark = ","),
+        " characters). Please keep it to at most ",
+        format(SAMPLE_INFO_MAX_CHARS, big.mark = ","),
+        " characters -- comfortably enough for a full Methods-section ",
+        "description of your samples -- by trimming it down to just the ",
+        "sample-level metadata needed to group and label your samples."
+      ),
+      technical_msg = paste0(
+        "sample-info file exceeds the ", SAMPLE_INFO_MAX_CHARS,
+        "-character cap: ", sample_info_size, " characters in ",
+        paths[["sample_info"]]
+      ),
       file = paths[["sample_info"]]
     )
   }

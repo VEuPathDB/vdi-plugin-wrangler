@@ -24,6 +24,8 @@ Input directory requirements
 
 Required, and must not be empty. It describes your samples in whatever form is most convenient — it does not need to be a structured table. Accepted forms include:
 
+**Size limit: 100,000 characters.** This comfortably accommodates a full Methods-section description of your samples (a typical manuscript Methods section is well under half this size), so it should never constrain a legitimate upload. If your file is larger, trim it down to just the sample-level metadata needed to group and label your samples — you don't need to include anything unrelated to sample identity or experimental grouping.
+
 * a **horizontal table** (one row per sample, one column per attribute), as TSV or CSV:
   ```
   sample	treatment	timepoint
