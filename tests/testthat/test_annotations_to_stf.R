@@ -76,6 +76,45 @@ test_that("the written STF loads as a valid study-wrangler entity", {
   expect_setequal(entity %>% get_data() %>% pull(sample.ID), c("S1", "S2", "S3"))
 })
 
+test_that("a sample with no label does not shift the following columns", {
+  # Regression test for finding 1: c() drops NULL, so an LLM response that
+  # omits `label` for one sample used to shift every later field in that
+  # row one column to the left against the (unshifted) header.
+  ann <- ANN
+  ann$samples[[1]]$label <- NULL # simulate the LLM omitting the field entirely
+  d <- tempfile("stf_"); dir.create(d)
+  tsv <- annotations_to_stf(ann, d)
+  lines <- readLines(tsv)
+  header_fields <- strsplit(lines[1], "\t", fixed = TRUE)[[1]]
+  row1_fields <- strsplit(lines[2], "\t", fixed = TRUE)[[1]]
+  expect_length(row1_fields, length(header_fields))
+  expect_equal(row1_fields[1], "S1")
+  expect_equal(row1_fields[2], "") # label: empty, not eaten by the shift
+  expect_equal(row1_fields[3], "24") # timepoint: still in its own column
+  expect_equal(row1_fields[4], "infected") # infection: still in its own column
+})
+
+test_that("a literal tab or newline in an LLM-authored value does not shift columns", {
+  # Regression test for finding 1's second hazard: even with the field count
+  # guaranteed, a literal tab/CR/LF embedded in a label or factor value
+  # (reachable by a prompt-injecting uploader via the free-form sample-info
+  # file, since it flows through the LLM into this JSON) would itself act as
+  # a stray field separator or row terminator.
+  ann <- ANN
+  ann$samples[[1]]$label <- "infected\t24h"
+  ann$samples[[2]]$factors$infection <- "cont\nrol"
+  d <- tempfile("stf_"); dir.create(d)
+  tsv <- annotations_to_stf(ann, d)
+  lines <- readLines(tsv)
+  header_fields <- strsplit(lines[1], "\t", fixed = TRUE)[[1]]
+  for (line in lines[-1]) {
+    expect_length(strsplit(line, "\t", fixed = TRUE)[[1]], length(header_fields))
+  }
+  entity <- entity_from_stf(tsv)
+  expect_true(isTRUE(entity %>% quiet() %>% validate()))
+  expect_setequal(entity %>% get_data() %>% pull(sample.ID), c("S1", "S2", "S3"))
+})
+
 test_that("a factor key containing a space becomes a dotted column", {
   ann <- ANN
   ann$factors <- list(`cell type` = list(displayName = "cell type"))

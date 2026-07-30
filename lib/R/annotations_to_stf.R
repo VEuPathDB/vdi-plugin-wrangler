@@ -57,6 +57,34 @@ infer_stf_type <- function(values) {
   list(data_type = "string", data_shape = "categorical")
 }
 
+#' Coerce a scalar to a TSV-safe cell value
+#'
+#' Neutralises two distinct hazards, both born of `annotations` being LLM
+#' output rather than trusted data:
+#'
+#' 1. NULL-drop: `paste(c(a, NULL, b), collapse = "\t")` silently collapses
+#'    to `"a\tb"` -- if the model omits an optional field (e.g. `label`) for
+#'    one sample, that row would emit one fewer field than the header, and
+#'    every subsequent column in that row would quietly shift left. Treating
+#'    a missing/non-scalar value as `""` keeps the field count fixed.
+#' 2. Delimiter injection: a literal tab/CR/LF embedded in a value would
+#'    itself act as a stray field separator or row terminator even once (1)
+#'    is fixed. This is reachable by a prompt-injecting uploader: `label`
+#'    and factor values are LLM output derived from the free-form,
+#'    user-supplied sample-info file, so a crafted sample-info file could
+#'    ask the model to embed a tab in a value.
+#'
+#' `definition`/`displayName` don't need this: they go through
+#' `yaml::as.yaml()`, which escapes them (see `test_annotations_to_stf.R`'s
+#' colon-in-definition test).
+#'
+#' @param x scalar value (character, NULL, or coercible to character)
+#' @return character(1), safe to place as one field in a TSV row
+.tsv_cell <- function(x) {
+  if (is.null(x) || length(x) != 1) return("")
+  gsub("[\t\r\n]+", " ", as.character(x))
+}
+
 #' Write a parsed sample-annotation list to a study-wrangler STF file pair
 #'
 #' Writes `entity-sample.tsv` and `entity-sample.yaml` into `output_dir`.
@@ -95,11 +123,15 @@ annotations_to_stf <- function(annotations, output_dir) {
 
   row_strings <- vapply(seq_along(samples), function(i) {
     s <- samples[[i]]
+    # row_factor_vals is already fixed-length (vapply(factor_keys, ...)
+    # iterates the factor keys, not the sample's own factors list, so a
+    # sample missing a factor can't shorten this vector -- only .tsv_cell's
+    # delimiter sanitisation is needed here, not its NULL-length guard.
     row_factor_vals <- vapply(factor_keys, function(key) {
       v <- factor_values[[key]][i]
-      if (is.na(v)) "" else v
+      if (is.na(v)) "" else .tsv_cell(v)
     }, character(1))
-    paste(c(s$sampleId, s$label, row_factor_vals), collapse = "\t")
+    paste(c(.tsv_cell(s$sampleId), .tsv_cell(s$label), row_factor_vals), collapse = "\t")
   }, character(1))
 
   tsv_path <- file.path(output_dir, "entity-sample.tsv")
