@@ -41,7 +41,7 @@ Required, and must not be empty. It describes your samples in whatever form is m
 * **free text** describing the samples in prose, e.g. "Samples S1 and S2 were infected; S3 and S4 were untreated controls. All were harvested 24 hours post-infection."
 * an **article methods paragraph**, copied as-is from a manuscript's methods section
 
-An AI step reads this file together with the sample IDs found in your count file(s) and produces the structured sample annotation used by the study.
+An AI step reads this file together with the sample IDs found in your count file(s) and produces the structured sample annotation that can be used to define custom contrasts for differential expression analysis.
 
 ### Sample IDs that must appear in `sample-info`
 
