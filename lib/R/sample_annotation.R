@@ -56,7 +56,10 @@ classify_sample_ids <- function(sample_ids) {
   reply <- trimws(tryCatch(
     llm_text(
       "classify_labels",
-      model = "claude-haiku-4-5-20251001",
+      # The alias, not the dated snapshot: the human confirmed live that
+      # claude-haiku-4-5 resolves to claude-haiku-4-5-20251001 today, and an
+      # alias avoids needing a manual migration when Anthropic repoints it.
+      model = "claude-haiku-4-5",
       system_prompt = system_prompt,
       user_prompt = user_prompt
     ),
@@ -357,6 +360,41 @@ generate_sample_entity <- function(sample_ids, sample_info_text) {
 
   if (!inherits(attempt_2, "error")) {
     return(attempt_2)
+  }
+
+  # If the *final* attempt failed because of the Claude API itself (network
+  # error, non-2xx response, malformed body -- an `llm_api_error`, see
+  # `.stop_llm_api_error()` in lib/R/llm_client.R) rather than because the
+  # generated annotation was invalid, the pipeline never got a second
+  # genuine judgement of the uploaded metadata: the last thing that happened
+  # was an outage, not a content verdict. Per the design spec
+  # (docs/superpowers/specs/2026-07-29-rnaseq-rc-design.md:356), an API
+  # outage/auth failure/malformed response must surface as an unexpected
+  # error (exit 255, "our fault"), not a transformation error (exit 99,
+  # "your data is bad") -- otherwise a Claude outage tells the uploader
+  # their metadata is bad, and VDI's exit-code-based routing sends the
+  # report to the wrong place.
+  #
+  # Deliberately keyed on attempt_2 alone, not "was either attempt ever an
+  # llm_api_error": if attempt_1 was an outage but attempt_2 reached the API
+  # and its *content* then failed the gates (a real, evaluated annotation
+  # that invented or omitted a sample ID), that is still genuine evidence
+  # about the uploaded metadata -- the retry did get a live judgement, so it
+  # correctly stays a transformation error. Routing on "either attempt" would
+  # misclassify that case as our fault when the model's own output was
+  # actually the problem. See
+  # test_sample_annotation.R's "mixed API-outage-then-bad-content" test.
+  if (inherits(attempt_2, "llm_api_error")) {
+    stop_unexpected_error(
+      user_msg = paste(
+        "The wrangler could not reach the Claude API to process your sample",
+        "metadata. Please try again later."
+      ),
+      technical_msg = paste(
+        "First attempt error:", conditionMessage(attempt_1),
+        "\nSecond attempt error:", conditionMessage(attempt_2)
+      )
+    )
   }
 
   many_samples_warning <- ""

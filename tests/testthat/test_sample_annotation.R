@@ -124,7 +124,10 @@ test_that("a first-attempt llm_api_error recovered by the retry produces a valid
   # network-error branch -- the exact code this task changed -- and then
   # through its real success branch, with CLAUDE_API_KEY set to a dummy value
   # so the missing-key branch (also real, but not what this test targets) is
-  # never hit.
+  # never hit. WRANGLER_LLM_OFFLINE is also forced off: test_examples.R sets
+  # it per-example (finding 3's fail-closed guard) but doesn't scope it, so
+  # it can persist as global state after that file's loop ends -- this test
+  # needs the real-call path reachable regardless of test-file run order.
   ids <- c("S1", "S2")
   post_calls <- 0
   fake_post <- function(...) {
@@ -144,7 +147,7 @@ test_that("a first-attempt llm_api_error recovered by the retry produces a valid
   llm_mocks_init(tempfile()) # ensure "annotate" isn't served from the mock registry
 
   entity <- NULL
-  withr::with_envvar(c(CLAUDE_API_KEY = "not-a-real-key-httr-is-mocked"), {
+  withr::with_envvar(c(CLAUDE_API_KEY = "not-a-real-key-httr-is-mocked", WRANGLER_LLM_OFFLINE = ""), {
     out <- capture.output({
       entity <- generate_sample_entity(ids, "S1 infected, S2 control")
     })
@@ -160,6 +163,87 @@ test_that("two failed attempts stop with a transformation error", {
   withr::with_envvar(c(WRANGLER_ALLOW_LLM_MOCKS = "1"), {
     llm_mocks_init(d)
     expect_error(generate_sample_entity(c("S1", "S2"), "info"), "TRANSFORMATION ERROR")
+  })
+})
+
+test_that("two consecutive llm_api_errors produce an unexpected error, not a transformation error", {
+  # Regression test for finding 2: before the fix, an API outage spanning
+  # both attempts fell through to the generic "even after a second attempt"
+  # transformation error (exit 99, "your data is bad"), even though
+  # llm_json() never returned a usable response to judge the uploaded
+  # metadata against. Per the design spec
+  # (docs/superpowers/specs/2026-07-29-rnaseq-rc-design.md:356), an API
+  # outage/auth failure/malformed response must surface as
+  # stop_unexpected_error() (exit 255, "our fault").
+  #
+  # The public mock registry can't produce an llm_api_error -- a queued mock
+  # only ever returns canned text (see llm_client.R) -- so httr::POST itself
+  # is faked here, returning a non-retryable 401 on every call. A
+  # non-retryable status keeps this test from paying for llm_text()'s
+  # internal exponential-backoff sleeps (which only fire for 429/5xx).
+  fake_post <- function(...) {
+    structure(
+      list(status_code = 401L, content = charToRaw("unauthorized"),
+           url = "https://api.anthropic.com/v1/messages", headers = list()),
+      class = "response"
+    )
+  }
+  local_mocked_bindings(POST = fake_post, .package = "httr")
+  llm_mocks_init(tempfile()) # ensure "annotate" isn't served from the mock registry
+
+  result <- NULL
+  out <- capture.output({
+    withr::with_envvar(c(CLAUDE_API_KEY = "not-a-real-key-httr-is-mocked", WRANGLER_LLM_OFFLINE = ""), {
+      result <- tryCatch(
+        generate_sample_entity(c("S1", "S2"), "S1 infected, S2 control"),
+        error = function(e) e
+      )
+    })
+  })
+
+  expect_match(paste(out, collapse = "\n"), "could not reach the Claude API")
+  expect_match(conditionMessage(result), "UNEXPECTED ERROR", fixed = TRUE)
+  expect_no_match(conditionMessage(result), "TRANSFORMATION ERROR", fixed = TRUE)
+})
+
+test_that("a mixed API-outage-then-bad-content failure still lands on the transformation error", {
+  # Documents the judgement call in generate_sample_entity(): routing is
+  # keyed on attempt_2 alone, not "was either attempt ever an
+  # llm_api_error". Here attempt 1 is an API outage (never produced content
+  # to judge) and attempt 2 genuinely reaches the API, gets back an
+  # annotation, and fails gate 2 on a real invented sample ID -- that is
+  # still evidence about the uploaded metadata, so this must NOT be
+  # classified as our fault.
+  fail_once_then_bad_id <- local({
+    calls <- 0
+    function(...) {
+      calls <<- calls + 1
+      if (calls == 1) {
+        return(structure(
+          list(status_code = 401L, content = charToRaw("unauthorized"),
+               url = "https://api.anthropic.com/v1/messages", headers = list()),
+          class = "response"
+        ))
+      }
+      inner_json <- as.character(jsonlite::toJSON(ann_for(c("S1", "S9")), auto_unbox = TRUE))
+      outer_json <- as.character(jsonlite::toJSON(
+        list(content = list(list(text = inner_json))), auto_unbox = TRUE
+      ))
+      structure(list(status_code = 200L, content = charToRaw(outer_json),
+                     url = "https://api.anthropic.com/v1/messages", headers = list()),
+                class = "response")
+    }
+  })
+  local_mocked_bindings(POST = fail_once_then_bad_id, .package = "httr")
+  llm_mocks_init(tempfile())
+
+  withr::with_envvar(c(CLAUDE_API_KEY = "not-a-real-key-httr-is-mocked", WRANGLER_LLM_OFFLINE = ""), {
+    result <- NULL
+    invisible(capture.output({
+      result <- tryCatch(generate_sample_entity(c("S1", "S2"), "info"), error = function(e) e)
+    }))
+    expect_match(conditionMessage(result), "TRANSFORMATION ERROR", fixed = TRUE)
+    expect_match(conditionMessage(result), "S9")
   })
 })
 
