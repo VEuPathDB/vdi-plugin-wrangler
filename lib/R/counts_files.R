@@ -50,12 +50,38 @@ SAMPLE_INFO_MAX_BYTES <- 100000L
 #' @return named character vector, names are role tokens, values are filenames
 .parse_manifest <- function(path) {
   lines <- readr::read_lines(path)
-  lines <- lines[trimws(lines) != ""]
+  # `useBytes = TRUE`, not `trimws()`: readr marks these strings "UTF-8"
+  # without validating them, so a manifest containing even one stray
+  # non-UTF-8 byte (e.g. from an upload that did not go through the web
+  # form) reaches a locale-aware function looking like valid UTF-8 and hard
+  # errors -- "input string N is invalid UTF-8" -- which is an uncaught R
+  # abort, not a validation error with a user-facing message. Same reasoning
+  # as the `useBytes = TRUE` comment on the sample-info blank-line check
+  # elsewhere in this file.
+  lines <- lines[!grepl("^[[:space:]]*$", lines, useBytes = TRUE)]
 
   if (length(lines) == 0) {
     stop_validation_error(
       user_msg = .MANIFEST_FAULT_USER_MSG,
       technical_msg = paste("Manifest is empty:", path),
+      file = path
+    )
+  }
+
+  # Guard against invalid UTF-8 explicitly, before any locale-aware string
+  # function (`regexpr`, `substr`, `nchar`) touches these lines. Without
+  # this, `regexpr(..., fixed = TRUE)` below degrades *silently* to `-1` on
+  # an invalid string (misreported as "no tab separator"), and `nchar()`
+  # hard-errors outright. A non-UTF-8 manifest is itself a structural fault,
+  # not a content fault -- the manifest is UTF-8 by contract because we
+  # generate it, so invalid bytes mean something upstream is broken.
+  bad_utf8 <- which(!validUTF8(lines))
+  if (length(bad_utf8) > 0) {
+    stop_validation_error(
+      user_msg = .MANIFEST_FAULT_USER_MSG,
+      technical_msg = paste0(
+        "Manifest contains invalid UTF-8 at line ", bad_utf8[1], ": ", path
+      ),
       file = path
     )
   }
@@ -91,6 +117,29 @@ SAMPLE_INFO_MAX_BYTES <- 100000L
       user_msg = .MANIFEST_FAULT_USER_MSG,
       technical_msg = paste(
         "Manifest contains duplicate role(s):", paste(dup, collapse = ", ")
+      ),
+      file = path
+    )
+  }
+
+  empty_file <- roles[files == ""]
+  if (length(empty_file) > 0) {
+    stop_validation_error(
+      user_msg = .MANIFEST_FAULT_USER_MSG,
+      technical_msg = paste(
+        "Manifest line has an empty filename for role:", empty_file[1]
+      ),
+      file = path
+    )
+  }
+
+  dup_file <- unique(files[duplicated(files)])
+  if (length(dup_file) > 0) {
+    stop_validation_error(
+      user_msg = .MANIFEST_FAULT_USER_MSG,
+      technical_msg = paste(
+        "Manifest lists the same file under more than one role:",
+        paste(dup_file, collapse = ", ")
       ),
       file = path
     )
@@ -139,8 +188,9 @@ discover_counts_files <- function(input_dir) {
     )
   }
 
-  # Every file must be listed. An unexpected extra is more likely a mistake
-  # than a deliberate addition, so reject rather than silently ignore.
+  # Every *data* file must be listed; non-data files such as `vdi-meta.json`
+  # are ignored. An unexpected extra data file is more likely a mistake than
+  # a deliberate addition, so reject rather than silently ignore.
   data_file_pattern <- "\\.(txt|tsv|csv|tab)$"
   data_files <- all_files[grepl(data_file_pattern, all_files, ignore.case = TRUE)]
   unreferenced <- setdiff(setdiff(data_files, manifest), MANIFEST_FILENAME)
@@ -176,13 +226,15 @@ discover_counts_files <- function(input_dir) {
     unname(.COUNTS_FILE_KEY_FOR_ROLE[names(manifest)])
   )
 
+  # The upload form always emits a `sample-info` role (see
+  # rnaseq-rc-data-files.ts), so a missing `sample_info` key here can only
+  # come from a malformed manifest -- a structural fault, not something a
+  # user of the form could have caused. Same reasoning applies to the four
+  # mode/pairing checks below.
   if (!"sample_info" %in% names(paths)) {
     stop_validation_error(
-      user_msg = paste(
-        "No sample-info file found. Please include a sample-info.txt,",
-        ".tsv or .csv file describing your samples."
-      ),
-      technical_msg = paste("No sample-info.* file found in:", input_dir),
+      user_msg = .MANIFEST_FAULT_USER_MSG,
+      technical_msg = paste("No sample-info role found in manifest for:", input_dir),
       file = input_dir
     )
   }
@@ -245,46 +297,42 @@ discover_counts_files <- function(input_dir) {
 
   if (has_unstranded && (has_sense || has_antisense)) {
     stop_validation_error(
-      user_msg = paste(
-        "Your upload contains both unstranded-counts and stranded",
-        "(sense-counts/antisense-counts) files. Please upload only one",
-        "style of count file."
+      user_msg = .MANIFEST_FAULT_USER_MSG,
+      technical_msg = paste(
+        "Both unstranded and stranded count files present",
+        "(manifest lists an unstranded role together with sense and/or",
+        "antisense role(s)):", input_dir
       ),
-      technical_msg = "Both unstranded and stranded count files present.",
       file = input_dir
     )
   }
 
   if (has_sense && !has_antisense) {
     stop_validation_error(
-      user_msg = paste(
-        "Found sense-counts but no antisense-counts file. Stranded count",
-        "uploads must include both a sense-counts and an antisense-counts file."
+      user_msg = .MANIFEST_FAULT_USER_MSG,
+      technical_msg = paste(
+        "sense role present without antisense role in manifest for:", input_dir
       ),
-      technical_msg = "sense-counts present without antisense-counts.",
       file = input_dir
     )
   }
 
   if (has_antisense && !has_sense) {
     stop_validation_error(
-      user_msg = paste(
-        "Found antisense-counts but no sense-counts file. Stranded count",
-        "uploads must include both a sense-counts and an antisense-counts file."
+      user_msg = .MANIFEST_FAULT_USER_MSG,
+      technical_msg = paste(
+        "antisense role present without sense role in manifest for:", input_dir
       ),
-      technical_msg = "antisense-counts present without sense-counts.",
       file = input_dir
     )
   }
 
   if (!has_unstranded && !has_sense) {
     stop_validation_error(
-      user_msg = paste(
-        "No count file found in your upload. Please include either an",
-        "unstranded-counts file, or a sense-counts/antisense-counts pair,",
-        "with a .txt, .tsv or .csv extension."
+      user_msg = .MANIFEST_FAULT_USER_MSG,
+      technical_msg = paste(
+        "No unstranded or sense/antisense role found in manifest for:", input_dir
       ),
-      technical_msg = paste("No recognised count file found in:", input_dir),
       file = input_dir
     )
   }
