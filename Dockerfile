@@ -202,7 +202,7 @@ RUN R -e "for (i in 1:3) { \
   }; \
   quit(status=1)"
 
-# this.path lets lib/R/wrangle-rnaseq-rc.R locate its sibling modules via
+# this.path lets lib/R/wrangle-rnaseqrc.R locate its sibling modules via
 # this.path::this.dir(), independent of the caller's cwd and of ORIGINAL_WD
 # being set. Deliberately placed after the study.wrangler install_github
 # layer (rather than in the earlier install.packages(c('remotes', 'S7',

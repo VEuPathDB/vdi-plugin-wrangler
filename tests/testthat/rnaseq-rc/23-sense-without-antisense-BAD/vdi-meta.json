@@ -1,7 +1,7 @@
 {
   "comment": "Only a sense-counts file was uploaded, with no matching antisense-counts file.",
   "test_expectation": "fail",
-  "type": { "name": "rnaseq-rc", "version": "1.0" },
+  "type": { "name": "rnaseqrc", "version": "1.0" },
   "expected_technical_error_regex": "sense-counts present without antisense-counts",
   "expected_user_error_regex": "Found sense-counts but no antisense-counts file"
 }

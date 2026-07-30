@@ -1,7 +1,7 @@
 {
   "comment": "Only one annotate mock is supplied and it invents sample ID S9 (not among the authoritative S1-S4). The first attempt is rejected, and the retry's llm_json(\"annotate\", ...) call finds the mock queue exhausted, so the retry does not recover either.",
   "test_expectation": "fail",
-  "type": { "name": "rnaseq-rc", "version": "1.0" },
+  "type": { "name": "rnaseqrc", "version": "1.0" },
   "expected_technical_error_regex": "First attempt error:.*S9.*Second attempt error:.*mock queue for call_name 'annotate' is exhausted",
   "expected_user_error_regex": "unable to automatically generate a valid sample annotation.*even after a second attempt"
 }

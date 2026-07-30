@@ -1,7 +1,7 @@
 {
   "comment": "The mocked annotate response returns only sampleId and label for each sample, with no experimental factors, so the resulting sample entity is valid STF but unusable for a differential expression contrast.",
   "test_expectation": "fail",
-  "type": { "name": "rnaseq-rc", "version": "1.0" },
+  "type": { "name": "rnaseqrc", "version": "1.0" },
   "expected_technical_error_regex": "DESeq-suitability check failed: n_samples = 4, usable factor variables among \\{\\} = FALSE",
   "expected_user_error_regex": "does not define a factor suitable for differential expression analysis"
 }

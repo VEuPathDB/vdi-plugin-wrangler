@@ -1,5 +1,5 @@
 {
   "comment": "Makes real, billable API calls. Runs only with WRANGLER_LLM_LIVE=1.",
   "test_expectation": "pass",
-  "type": { "name": "rnaseq-rc", "version": "1.0" }
+  "type": { "name": "rnaseqrc", "version": "1.0" }
 }
