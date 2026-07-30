@@ -1,0 +1,6 @@
+RNA sequencing. Parasite cultures were split into infected and control
+conditions. Samples S1 and S2 were harvested from parasites exposed to host
+serum (infected condition), while samples S3 and S4 were harvested from
+parallel cultures maintained in standard medium (control condition). All
+four samples were collected 24 hours after the start of treatment. Total
+RNA was extracted and libraries were prepared for Illumina sequencing.

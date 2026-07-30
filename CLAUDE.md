@@ -74,7 +74,7 @@ The system is extensible via datatype-specific wrangler scripts:
 - Each datatype has its own wrangler in `lib/R/wrangle-<datatype>.R`
 - Each wrangler must export a `wrangle(input_dir)` function that returns a study object
 - The datatype is determined from `vdi-meta.json` in the input directory (defaults to "phenotype")
-- Available datatypes: `phenotype`, `stf`
+- Available datatypes: `phenotype`, `stf`, `isasimple`, `rnaseqrc`
 
 **Phenotype Wrangler** (`lib/R/wrangle-phenotype.R`):
 - Expects exactly one `.txt` or `.tsv` file
@@ -86,6 +86,36 @@ The system is extensible via datatype-specific wrangler scripts:
 **STF Wrangler** (`lib/R/wrangle-stf.R`):
 - Simple wrapper around `study_from_stf(input_dir)` from the study.wrangler package
 
+**rnaseqrc Wrangler** (`lib/R/wrangle-rnaseqrc.R`):
+- Bulk RNA-seq counts (a `sense-counts`/`antisense-counts` pair, or a single `unstranded-counts`
+  file) plus a free-form `sample-info` file. Builds a `sample` root entity (via an LLM-assisted
+  annotation step) and a tall `HTSeq counts` child entity from the deterministically-parsed counts.
+  See `doc/rnaseq-rc.md` for the user-facing format contract.
+- The orchestrator (`wrangle-rnaseqrc.R`) sources its own sibling modules via
+  `this.path::this.dir()` (see below), since `bin/wrangle.R` only sources
+  `lib/R/wrangle-<datatype>.R` itself. It sequences the modules below and owns the error taxonomy;
+  it must not reimplement anything from them.
+  - `lib/R/llm_client.R` - generic Claude Messages API transport (`llm_text()`/`llm_json()`), plus
+    the test mock registry (see `llm-mocks.json` below). No domain knowledge of RNA-seq.
+  - `lib/R/counts_files.R` - deterministic count-file discovery, filename/shape/value validation,
+    and sense/antisense merge. No awareness of the LLM step.
+  - `lib/R/sample_annotation.R` - the one LLM-dependent step: classifies sample IDs as
+    informative/uninformative, generates the sample annotation JSON (with one retry on validation
+    failure), and runs the DESeq-suitability check.
+  - `lib/R/annotations_to_stf.R` - R port of `dataset-curator`'s
+    `sample-annotations-to-stf.js`; converts the parsed annotation JSON into an
+    `entity-sample.tsv`/`entity-sample.yaml` STF pair for `entity_from_stf()` to read back.
+- **`llm-mocks.json` test convention**: a test directory may include an `llm-mocks.json` file with
+  FIFO response queues keyed by call_name (`classify_labels`, `annotate`). `llm_mocks_init()` only
+  loads it when the environment variable `WRANGLER_ALLOW_LLM_MOCKS` is exactly `"1"` **and** the
+  file exists, so an uploaded `llm-mocks.json` can never divert a production run — mocks are only
+  ever consulted when a test has explicitly opted in. `tests/testthat/test_examples.R` sets
+  `WRANGLER_ALLOW_LLM_MOCKS=1` for the whole suite.
+- **`-live` directory convention**: any top-level datatype directory under `tests/testthat/`
+  suffixed `-live` (e.g. `rnaseqrc-live/`) makes real, billable Claude API calls instead of using
+  mocks, and is skipped by `test_examples.R` unless `WRANGLER_LLM_LIVE=1` is set. Do not run this
+  path casually — it costs real money.
+
 ### Dependencies
 
 Key R packages (installed in Dockerfile):
@@ -93,6 +123,8 @@ Key R packages (installed in Dockerfile):
 - `study.wrangler` - Core VEuPathDB study wrangling functionality
 - `veupathUtils` - VEuPathDB utilities
 - `plot.data` - Provides `binWidth` function and data visualization
+- `this.path` - Lets `lib/R/wrangle-rnaseqrc.R` resolve its sibling `source()` calls via
+  `this.path::this.dir()`, independent of the caller's working directory
 
 Key Perl modules:
 - `VdiStudyHandlerCommon.pm` - Common VDI plugin functionality - comes from https://github.com/VEuPathDB/vdi-lib-plugin-study at container build time.
@@ -137,7 +169,7 @@ assert <- function(study, output_dir) {
 }
 ```
 
-**Current count**: 67 passing tests (including 2 encoding tests with assert.R assertions).
+**Current count**: 280 passing tests (including assert.R assertions for encoding and for rnaseq-rc entity shape/stable_id checks).
 
 ### Adding a New Datatype
 

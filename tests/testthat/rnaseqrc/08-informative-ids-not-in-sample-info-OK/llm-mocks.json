@@ -1,0 +1,25 @@
+{
+  "classify_labels": ["labels_informative"],
+  "annotate": [
+    {
+      "profileSetName": "Sex and timepoint comparison",
+      "factors": {
+        "sex": {
+          "displayName": "sex",
+          "definition": "Biological sex of the animal"
+        },
+        "timepoint": {
+          "displayName": "timepoint",
+          "definition": "Time elapsed after treatment",
+          "unit": "hour"
+        }
+      },
+      "samples": [
+        { "sampleId": "male_3h_rep1",   "label": "male 3h",   "factors": { "sex": "male",   "timepoint": "3" } },
+        { "sampleId": "male_3h_rep2",   "label": "male 3h",   "factors": { "sex": "male",   "timepoint": "3" } },
+        { "sampleId": "female_6h_rep1", "label": "female 6h", "factors": { "sex": "female", "timepoint": "6" } },
+        { "sampleId": "female_6h_rep2", "label": "female 6h", "factors": { "sex": "female", "timepoint": "6" } }
+      ]
+    }
+  ]
+}

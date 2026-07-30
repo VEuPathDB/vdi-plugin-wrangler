@@ -24,6 +24,10 @@ if (!dir.exists(original_wd) || original_wd == "") {
 # Load error helpers (needed by all wrangler scripts)
 source(file.path(original_wd, "lib/R/error_helpers.R"))
 
+# Allow wranglers to honour llm-mocks.json in test data directories.
+# Never set in production, so an uploaded mock file cannot divert a real run.
+Sys.setenv(WRANGLER_ALLOW_LLM_MOCKS = "1")
+
 # Configure validation to use both baseline and EDA profiles
 set_config(validation.profiles = c("baseline", "eda"))
 
@@ -42,6 +46,11 @@ test_timings <- list()
 
 datatypes <- list.dirs(recursive = FALSE, full.names = FALSE)
 
+# Directories suffixed '-live' make real, billable LLM API calls. Opt in explicitly.
+if (!identical(Sys.getenv("WRANGLER_LLM_LIVE"), "1")) {
+  datatypes <- datatypes[!grepl("-live$", datatypes)]
+}
+
 for (datatype in datatypes) {
   examples <- list.dirs(datatype, recursive = FALSE, full.names = FALSE)
 
@@ -53,6 +62,19 @@ for (datatype in datatypes) {
     test_that(glue::glue("Example '{datatype}/{example}' loads or fails as appropriate"), {
 
       example_dir <- file.path(datatype, example)
+
+      # Fail-closed guard (finding 3): WRANGLER_ALLOW_LLM_MOCKS=1 above only
+      # *permits* mocks, it does not *forbid* llm_text() from falling
+      # through to a real, billable API call when no mock queue exists for
+      # a call_name -- and docker-compose.yml now hands `make test` a real
+      # CLAUDE_API_KEY. WRANGLER_LLM_OFFLINE=1 makes llm_text() refuse that
+      # fall-through outright (see lib/R/llm_client.R). Set per-example,
+      # keyed on the un-overridden `datatype` (the directory name, before
+      # any vdi-meta.json `type` override below) rather than once for the
+      # whole process, because the opt-in `*-live` fixtures -- which must
+      # make real calls -- share this same R session and this same for-loop
+      # with every offline fixture.
+      Sys.setenv(WRANGLER_LLM_OFFLINE = if (grepl("-live$", datatype)) "" else "1")
 
       # Most tests we expect to complete without errors
       # however, you can set `"test_expectation": "fail"` in the

@@ -1,0 +1,7 @@
+{
+  "comment": "manifest.tsv's unstranded role names counts_34_missing.tsv, which is not actually present among the uploaded files (a dangling reference in the other direction from 13-unreferenced-extra-file-BAD).",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "Manifest references file\\(s\\) not present in the upload.*counts_34_missing\\.tsv",
+  "expected_user_error_regex": "There was a problem with the structure of your upload"
+}

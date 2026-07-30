@@ -1,0 +1,7 @@
+{
+  "comment": "manifest.tsv lists the 'unstranded' role twice, against two different filenames.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "Manifest contains duplicate role\\(s\\).*unstranded",
+  "expected_user_error_regex": "There was a problem with the structure of your upload"
+}

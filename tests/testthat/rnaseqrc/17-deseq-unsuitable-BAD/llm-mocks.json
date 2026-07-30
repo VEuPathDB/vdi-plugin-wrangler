@@ -1,0 +1,15 @@
+{
+  "classify_labels": ["labels_uninformative"],
+  "annotate": [
+    {
+      "profileSetName": "Four samples, no known factors",
+      "factors": {},
+      "samples": [
+        { "sampleId": "S1", "label": "sample S1", "factors": {} },
+        { "sampleId": "S2", "label": "sample S2", "factors": {} },
+        { "sampleId": "S3", "label": "sample S3", "factors": {} },
+        { "sampleId": "S4", "label": "sample S4", "factors": {} }
+      ]
+    }
+  ]
+}

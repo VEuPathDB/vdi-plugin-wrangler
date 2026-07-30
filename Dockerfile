@@ -189,7 +189,7 @@ RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
     && cp bin/* /opt/veupathdb/bin
 
-ARG STUDY_WRANGLER_GIT_REF="v1.0.47"
+ARG STUDY_WRANGLER_GIT_REF="v1.0.48"
 # install_github() reports failed dependencies as warnings and exits 0, so the
 # build can "succeed" with study.wrangler (or its deps) silently missing.
 # Retry a few times (failures are usually transient download timeouts; retries
@@ -201,6 +201,17 @@ RUN R -e "for (i in 1:3) { \
     message('study.wrangler not loadable; attempt ', i, ' failed, retrying...'); \
   }; \
   quit(status=1)"
+
+# this.path lets lib/R/wrangle-rnaseqrc.R locate its sibling modules via
+# this.path::this.dir(), independent of the caller's cwd and of ORIGINAL_WD
+# being set. Deliberately placed after the study.wrangler install_github
+# layer (rather than in the earlier install.packages(c('remotes', 'S7',
+# 'igraph')) layer) so this addition doesn't bust that layer's cache and
+# force a ~45 minute rebuild. Small CRAN package, not available via apt.
+# install.packages() exits 0 even on failure (see note above), so verify
+# with requireNamespace() and fail the build ourselves.
+RUN R -e "install.packages('this.path'); \
+  if (!requireNamespace('this.path', quietly=TRUE)) quit(status=1)"
 
 ARG LIB_PERL_GIT_COMMIT_SHA=c2c5bfb65b649f179282572ac59afc6ff43e9420
 RUN git clone https://github.com/VEuPathDB/vdi-lib-perl-utils.git \

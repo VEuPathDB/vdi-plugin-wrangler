@@ -1,0 +1,7 @@
+{
+  "comment": "The antisense-counts file is missing the PF3D7_1000 gene row that is present in sense-counts, while the sample columns match.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "Gene mismatch between sense and antisense counts files",
+  "expected_user_error_regex": "sense-counts and antisense-counts files do not describe the.*same set of genes"
+}

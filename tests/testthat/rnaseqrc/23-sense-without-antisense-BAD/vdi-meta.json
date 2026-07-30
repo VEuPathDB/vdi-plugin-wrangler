@@ -1,0 +1,7 @@
+{
+  "comment": "Only a sense role was listed in the manifest, with no matching antisense role. This is one of the five role-set checks that emit the shared helpdesk user_msg (Task 2 review), with the specific wording moved to technical_msg.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "sense role present without antisense role",
+  "expected_user_error_regex": "There was a problem with the structure of your upload"
+}

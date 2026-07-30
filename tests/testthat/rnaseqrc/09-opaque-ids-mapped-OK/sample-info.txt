@@ -1,0 +1,5 @@
+sample	treatment	timepoint
+S001	infected	24
+S002	infected	24
+S003	control	24
+S004	control	24

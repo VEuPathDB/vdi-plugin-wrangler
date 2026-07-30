@@ -1,0 +1,3 @@
+sense	sense_reads.tsv
+antisense	antisense_reads.tsv
+sample-info	sample-info.txt

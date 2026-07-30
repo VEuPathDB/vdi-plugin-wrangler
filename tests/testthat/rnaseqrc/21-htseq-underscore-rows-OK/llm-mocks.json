@@ -1,0 +1,25 @@
+{
+  "classify_labels": ["labels_uninformative"],
+  "annotate": [
+    {
+      "profileSetName": "Infection response at 24h",
+      "factors": {
+        "treatment": {
+          "displayName": "treatment",
+          "definition": "Whether samples were exposed to a pathogen or left as untreated controls"
+        },
+        "timepoint": {
+          "displayName": "timepoint",
+          "definition": "Time elapsed after treatment",
+          "unit": "hour"
+        }
+      },
+      "samples": [
+        { "sampleId": "S1", "label": "infected 24h", "factors": { "treatment": "infected", "timepoint": "24" } },
+        { "sampleId": "S2", "label": "infected 24h", "factors": { "treatment": "infected", "timepoint": "24" } },
+        { "sampleId": "S3", "label": "control 24h",  "factors": { "treatment": "control",  "timepoint": "24" } },
+        { "sampleId": "S4", "label": "control 24h",  "factors": { "treatment": "control",  "timepoint": "24" } }
+      ]
+    }
+  ]
+}

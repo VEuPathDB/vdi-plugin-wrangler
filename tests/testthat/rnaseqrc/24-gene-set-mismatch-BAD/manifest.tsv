@@ -1,0 +1,3 @@
+sense	plus_strand_counts.tsv
+antisense	minus_strand_counts.tsv
+sample-info	sample-info.txt

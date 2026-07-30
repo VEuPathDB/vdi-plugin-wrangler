@@ -1,0 +1,7 @@
+{
+  "comment": "Both the first and the retried annotate call invent a sample ID that is not among the authoritative IDs from the count files (S9, then S10 instead of S4), so the retry does not recover.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "First attempt error:.*S9.*Second attempt error:.*S10",
+  "expected_user_error_regex": "unable to automatically generate a valid sample annotation.*even after a second attempt"
+}

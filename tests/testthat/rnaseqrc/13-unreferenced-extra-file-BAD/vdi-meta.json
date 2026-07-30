@@ -1,0 +1,7 @@
+{
+  "comment": "The upload contains lab_notebook_extract.tsv, a data file (accepted extension) that is not listed under any role in manifest.tsv. Under the manifest scheme a file listed as a role (e.g. 'unstranded') is valid under any filename, so the old premise here (counts.tsv rejected as an unrecognised stem) no longer applies; this fixture now targets the unreferenced-extra-file check instead.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "Upload contains file\\(s\\) not listed in the manifest.*lab_notebook_extract\\.tsv",
+  "expected_user_error_regex": "There was a problem with the structure of your upload"
+}

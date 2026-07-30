@@ -1,0 +1,7 @@
+{
+  "comment": "manifest.tsv's second line ('this line has no tab in it') has no tab separator between role and filename.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "Manifest line has no tab separator",
+  "expected_user_error_regex": "There was a problem with the structure of your upload"
+}
