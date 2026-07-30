@@ -2,13 +2,13 @@
 
 Input directory requirements
 
-* one of these two count-file combinations, plus a `sample-info` file:
-  - a `sense-counts` file **and** an `antisense-counts` file (a stranded pair), or
-  - a single `unstranded-counts` file
-  - do not mix the two styles, and do not upload a stranded file without its pair
-* every file's extension must be one of `.txt`, `.tsv` or `.csv`, matched case-insensitively (so `Sense-Counts.CSV` is accepted); the delimiter itself is sniffed from the file content
-* the filename **stem** must match exactly (`sense-counts`, `antisense-counts`, `unstranded-counts`, `sample-info`), matched case-insensitively — a file such as `counts.tsv` is rejected as unrecognised
-* any other `.txt`/`.tsv`/`.csv` file in the input directory is rejected rather than silently ignored, since an unexpected extra file is more likely a misnamed count file than a deliberate extra
+* in the upload form, select one of these two count-file combinations, plus your sample metadata:
+  - a sense-counts file **and** an antisense-counts file (a stranded pair), or
+  - a single unstranded-counts file
+  - do not mix the two styles, and do not select a stranded file without its pair
+* every file's extension must be one of `.txt`, `.tsv`, `.csv` or `.tab`, matched case-insensitively (so `Sense-Counts.CSV` is accepted); the delimiter itself is sniffed from the file content
+* you don't need to rename anything: you tell the form which role each file plays, and your files keep their original names all the way through — `HTSeq_output_run3.tsv` stays `HTSeq_output_run3.tsv`
+* any additional `.txt`/`.tsv`/`.csv`/`.tab` file beyond the ones you selected is rejected rather than silently ignored, since an unexpected extra file is more likely a mistake than a deliberate addition
 
 ## Counts file layout
 
@@ -24,7 +24,7 @@ Input directory requirements
 
 Required, and must not be empty. It describes your samples in whatever form is most convenient — it does not need to be a structured table. Accepted forms include:
 
-**Size limit: 100,000 characters.** This comfortably accommodates a full Methods-section description of your samples (a typical manuscript Methods section is well under half this size), so it should never constrain a legitimate upload. If your file is larger, trim it down to just the sample-level metadata needed to group and label your samples — you don't need to include anything unrelated to sample identity or experimental grouping.
+**Size limit: 100,000 bytes.** This comfortably accommodates a full Methods-section description of your samples (a typical manuscript Methods section is well under half this size), so it should never constrain a legitimate upload. If your file is larger, trim it down to just the sample-level metadata needed to group and label your samples — you don't need to include anything unrelated to sample identity or experimental grouping.
 
 * a **horizontal table** (one row per sample, one column per attribute), as TSV or CSV:
   ```
@@ -42,6 +42,7 @@ Required, and must not be empty. It describes your samples in whatever form is m
   ```
 * **free text** describing the samples in prose, e.g. "Samples S1 and S2 were infected; S3 and S4 were untreated controls. All were harvested 24 hours post-infection."
 * an **article methods paragraph**, copied as-is from a manuscript's methods section
+* whichever form you use, state the **units** for any numeric values (e.g. "age: 5 days", not "age: 5") — units are rarely recoverable from sample names alone, and the AI annotation step can only label a value it can actually interpret
 
 An AI step reads this file together with the sample IDs found in your count file(s) and produces the structured sample annotation that can be used to define custom contrasts for differential expression analysis.
 
