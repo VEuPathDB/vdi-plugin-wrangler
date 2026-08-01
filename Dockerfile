@@ -226,7 +226,6 @@ ARG PLUGIN_SERVER_VERSION=v1.8.8
 RUN curl "https://github.com/VEuPathDB/vdi-service/releases/download/${PLUGIN_SERVER_VERSION}/plugin-server.tar.gz" -Lf --no-progress-meter | tar -xz
 
 # scripts and paths
-
 COPY ./ /opt/veupathdb/
 ENV PATH="$PATH:/opt/veupathdb/bin"
 
