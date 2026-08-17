@@ -1,0 +1,7 @@
+{
+  "comment": "Both the first and retried 'annotate' calls come back as a Claude safety-classifier refusal (stop_reason: refusal), simulating a probable biosecurity guardrail decline. The wrangler should surface the classifier's stated category/explanation to the uploader instead of a generic 'could not reach the Claude API' message.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "First attempt error:.*declined.*category: bio.*Second attempt error:.*declined.*category: bio",
+  "expected_user_error_regex": "safety classifier declined to process your sample metadata \\(category: bio\\)"
+}

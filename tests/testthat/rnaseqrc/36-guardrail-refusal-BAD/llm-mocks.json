@@ -1,0 +1,15 @@
+{
+  "classify_labels": ["labels_uninformative"],
+  "annotate": [
+    {
+      "stop_reason": "refusal",
+      "category": "bio",
+      "explanation": "This request was declined because it could enable biological harm."
+    },
+    {
+      "stop_reason": "refusal",
+      "category": "bio",
+      "explanation": "This request was declined because it could enable biological harm."
+    }
+  ]
+}

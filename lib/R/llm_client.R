@@ -132,6 +132,40 @@ llm_mocks_exhausted <- function() {
   ))
 }
 
+#' Raise a classed `llm_refusal_error` condition for a Claude safety-classifier decline
+#'
+#' Claude's Messages API reports a safety-classifier decline as a normal HTTP
+#' 200 response with `stop_reason: "refusal"` and a `stop_details` object
+#' (`category`/`explanation`, either of which may be `null`) -- not as an
+#' error, and not necessarily with an empty `content` array. See
+#' https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback.
+#'
+#' This is a subclass of `llm_api_error` so any existing `tryCatch()` that
+#' catches `llm_api_error` keeps working unchanged. Callers that want to
+#' surface the classifier's stated reason to the uploader -- rather than the
+#' generic "could not reach the Claude API" framing, which wrongly implies a
+#' transient outage that a later retry might fix -- should catch
+#' `llm_refusal_error` specifically, ahead of `llm_api_error`, and read its
+#' `category`/`explanation` elements.
+#'
+#' @param category `stop_details$category`, or NULL if uncategorized.
+#' @param explanation `stop_details$explanation`, or NULL if uncategorized.
+.stop_llm_refusal_error <- function(category, explanation) {
+  stop(structure(
+    class = c("llm_refusal_error", "llm_api_error", "error", "condition"),
+    list(
+      message = sprintf(
+        "Claude declined to process this request (category: %s): %s",
+        if (is.null(category)) "unspecified" else category,
+        if (is.null(explanation)) "no explanation given" else explanation
+      ),
+      call = NULL,
+      category = category,
+      explanation = explanation
+    )
+  ))
+}
+
 #' Call the Claude Messages API (or return a queued mock), returning raw text
 #'
 #' @param call_name Logical name for this call site, used for mock lookup and
@@ -146,6 +180,13 @@ llm_text <- function(call_name, model, system_prompt, user_prompt, max_tokens = 
   mock <- .llm_mock_pop(call_name)
   if (mock$found) {
     value <- mock$value
+    # Mirrors the real API's refusal shape (see .stop_llm_refusal_error()) so
+    # a test's llm-mocks.json can simulate a guardrail decline by queuing
+    # e.g. {"stop_reason": "refusal", "category": "bio", "explanation": "..."}
+    # instead of a normal text/JSON reply.
+    if (is.list(value) && identical(value$stop_reason, "refusal")) {
+      .stop_llm_refusal_error(value$category, value$explanation)
+    }
     if (is.character(value)) {
       return(value)
     }
@@ -216,6 +257,9 @@ llm_text <- function(call_name, model, system_prompt, user_prompt, max_tokens = 
     status <- httr::status_code(response)
     if (status >= 200 && status < 300) {
       parsed <- httr::content(response, as = "parsed", type = "application/json", encoding = "UTF-8")
+      if (identical(parsed$stop_reason, "refusal")) {
+        .stop_llm_refusal_error(parsed$stop_details$category, parsed$stop_details$explanation)
+      }
       text <- tryCatch(parsed$content[[1]]$text, error = function(e) NULL)
       if (is.null(text)) {
         .stop_llm_api_error(paste(
