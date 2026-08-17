@@ -63,6 +63,18 @@ classify_sample_ids <- function(sample_ids) {
       system_prompt = system_prompt,
       user_prompt = user_prompt
     ),
+    llm_refusal_error = function(e) {
+      stop_transformation_error(
+        user_msg = paste0(
+          "Claude's safety classifier declined to process your sample IDs",
+          if (!is.null(e$category)) paste0(" (category: ", e$category, ")") else "",
+          ". ", if (!is.null(e$explanation)) e$explanation else "No further explanation was given.",
+          " Please review your sample IDs and sample metadata for content that ",
+          "may resemble a sensitive or restricted topic, and re-upload."
+        ),
+        technical_msg = conditionMessage(e)
+      )
+    },
     llm_api_error = function(e) {
       stop_unexpected_error(
         user_msg = "The wrangler could not reach the Claude API to classify your sample IDs.",
@@ -384,6 +396,30 @@ generate_sample_entity <- function(sample_ids, sample_info_text) {
   # misclassify that case as our fault when the model's own output was
   # actually the problem. See
   # test_sample_annotation.R's "mixed API-outage-then-bad-content" test.
+  # A refusal (see `.stop_llm_refusal_error()` in lib/R/llm_client.R) is a
+  # subclass of `llm_api_error`, but it is not an outage -- it is Claude's
+  # safety classifier declining the content it was given, and re-sending the
+  # same sample metadata is very likely to be declined again. Route it to its
+  # own message, naming the classifier's stated category/explanation, ahead
+  # of the generic `llm_api_error` check below so it doesn't fall through to
+  # the misleading "could not reach the Claude API ... try again later"
+  # framing.
+  if (inherits(attempt_2, "llm_refusal_error")) {
+    stop_transformation_error(
+      user_msg = paste0(
+        "Claude's safety classifier declined to process your sample metadata",
+        if (!is.null(attempt_2$category)) paste0(" (category: ", attempt_2$category, ")") else "",
+        ". ", if (!is.null(attempt_2$explanation)) attempt_2$explanation else "No further explanation was given.",
+        " Please review your sample metadata for content that may resemble a ",
+        "sensitive or restricted topic, and re-upload."
+      ),
+      technical_msg = paste(
+        "First attempt error:", conditionMessage(attempt_1),
+        "\nSecond attempt error:", conditionMessage(attempt_2)
+      )
+    )
+  }
+
   if (inherits(attempt_2, "llm_api_error")) {
     stop_unexpected_error(
       user_msg = paste(

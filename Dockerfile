@@ -189,7 +189,7 @@ RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
     && cp bin/* /opt/veupathdb/bin
 
-ARG STUDY_WRANGLER_GIT_REF="v1.0.48"
+ARG STUDY_WRANGLER_GIT_REF="v1.0.50"
 # install_github() reports failed dependencies as warnings and exits 0, so the
 # build can "succeed" with study.wrangler (or its deps) silently missing.
 # Retry a few times (failures are usually transient download timeouts; retries
