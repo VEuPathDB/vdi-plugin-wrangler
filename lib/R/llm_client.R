@@ -148,6 +148,27 @@ llm_mocks_exhausted <- function() {
 #' `llm_refusal_error` specifically, ahead of `llm_api_error`, and read its
 #' `category`/`explanation` elements.
 #'
+#' Strip Anthropic's API-integrator guidance from a refusal explanation
+#'
+#' `stop_details$explanation` on a refusal sometimes includes a sentence
+#' aimed at API integrators (e.g. "API integrators: you can reduce refusals
+#' for your users by configuring a fallback model -- see
+#' https://platform.claude.com/docs/en/build-with-claude/refusals-and-fallback").
+#' That sentence is developer-facing guidance, not something a web uploader
+#' can act on, so it must not reach user-facing error messages. This drops
+#' everything from "API integrators" onward and returns NULL if nothing
+#' meaningful is left.
+#'
+#' @param explanation `stop_details$explanation`, or NULL.
+#' @return Sanitized explanation, or NULL if NULL/blank after stripping.
+.sanitize_refusal_explanation <- function(explanation) {
+  if (is.null(explanation)) {
+    return(NULL)
+  }
+  cleaned <- trimws(sub("API integrators:.*$", "", explanation, perl = TRUE, ignore.case = TRUE))
+  if (nchar(cleaned) == 0) NULL else cleaned
+}
+
 #' @param category `stop_details$category`, or NULL if uncategorized.
 #' @param explanation `stop_details$explanation`, or NULL if uncategorized.
 .stop_llm_refusal_error <- function(category, explanation) {

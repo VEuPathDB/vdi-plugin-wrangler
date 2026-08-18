@@ -64,11 +64,12 @@ classify_sample_ids <- function(sample_ids) {
       user_prompt = user_prompt
     ),
     llm_refusal_error = function(e) {
+      explanation <- .sanitize_refusal_explanation(e$explanation)
       stop_transformation_error(
         user_msg = paste0(
           "Claude's safety classifier declined to process your sample IDs",
           if (!is.null(e$category)) paste0(" (category: ", e$category, ")") else "",
-          ". ", if (!is.null(e$explanation)) e$explanation else "No further explanation was given.",
+          ". ", if (!is.null(explanation)) explanation else "No further explanation was given.",
           " Please review your sample IDs and sample metadata for content that ",
           "may resemble a sensitive or restricted topic, and re-upload."
         ),
@@ -405,11 +406,12 @@ generate_sample_entity <- function(sample_ids, sample_info_text) {
   # the misleading "could not reach the Claude API ... try again later"
   # framing.
   if (inherits(attempt_2, "llm_refusal_error")) {
+    explanation <- .sanitize_refusal_explanation(attempt_2$explanation)
     stop_transformation_error(
       user_msg = paste0(
         "Claude's safety classifier declined to process your sample metadata",
         if (!is.null(attempt_2$category)) paste0(" (category: ", attempt_2$category, ")") else "",
-        ". ", if (!is.null(attempt_2$explanation)) attempt_2$explanation else "No further explanation was given.",
+        ". ", if (!is.null(explanation)) explanation else "No further explanation was given.",
         " Please review your sample metadata for content that may resemble a ",
         "sensitive or restricted topic, and re-upload."
       ),

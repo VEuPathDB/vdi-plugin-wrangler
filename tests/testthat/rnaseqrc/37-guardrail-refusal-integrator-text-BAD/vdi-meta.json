@@ -1,0 +1,7 @@
+{
+  "comment": "Both the first and retried 'annotate' calls come back as a Claude safety-classifier refusal whose stated explanation is entirely the developer-facing 'API integrators' fallback-model guidance (see lib/R/llm_client.R .sanitize_refusal_explanation()). That guidance is not actionable for a web uploader and must not reach the user-facing message.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "First attempt error:.*API integrators.*Second attempt error:.*API integrators",
+  "expected_user_error_regex": "safety classifier declined to process your sample metadata \\(category: bio\\)\\. No further explanation was given\\."
+}
