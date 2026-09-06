@@ -1,0 +1,5 @@
+{
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "Non-UTF-8 STF file\\(s\\) detected.*entity-household\\.tsv",
+  "expected_user_error_regex": "not valid UTF-8.*entity-household\\.tsv"
+}
