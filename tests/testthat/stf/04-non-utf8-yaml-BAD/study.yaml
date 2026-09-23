@@ -1,0 +1,7 @@
+name: my study
+
+entities:
+  - household
+  - participant
+  - observation
+
