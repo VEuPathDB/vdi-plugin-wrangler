@@ -23,6 +23,16 @@ Each `entity-*.tsv` file is either wide or tall format, distinguished by a `\\ D
 `Descriptors \\`) marker in the header row — see the canonical spec for the full column-layout
 rules (ID columns, parent/child references, etc.).
 
+## Geographic variables
+
+STF uploads do not need to include EDA geo metadata or the `geohash_1`–`geohash_6`
+(geoaggregator) variables. The wrangler runs `infer_geo_variables_for_eda()` on every entity:
+an entity with exactly one latitude-like and one longitude-like variable (see the function's
+documentation for the column-name rules) gets the latitude/longitude stable IDs and generated
+geohash columns. Any geohash columns already present are dropped and regenerated from the
+coordinates, so re-uploading STF exported by study.wrangler is safe (requires study.wrangler
+>= 1.0.53).
+
 ## Encoding requirement
 
 All `.tsv`, `.yaml`, and `.yml` files in the input directory must be valid UTF-8. This is checked

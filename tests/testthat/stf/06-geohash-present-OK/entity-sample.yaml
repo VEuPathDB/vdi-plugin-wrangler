@@ -1,0 +1,28 @@
+name: sample
+display_name: sample
+display_name_plural: samples
+
+id_columns:
+  - id_column: Site.Id
+    entity_name: site
+    entity_level: -1
+  - id_column: Sample.Id
+    entity_name: sample
+
+variables:
+  - variable: Species
+    provider_label:
+      - Species
+    display_name: Species
+    data_type: string
+    data_shape: categorical
+  - variable: Collection.date
+    provider_label:
+      - Collection date
+    display_name: Collection date
+    data_type: date
+    data_shape: continuous
+
+categories: []
+collections: []
+

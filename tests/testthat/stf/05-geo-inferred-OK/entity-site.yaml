@@ -1,0 +1,29 @@
+name: site
+display_name: collection site
+display_name_plural: collection sites
+
+id_columns:
+  - id_column: Site.Id
+    entity_name: site
+
+variables:
+  - variable: Latitude
+    display_name: Latitude
+    provider_label:
+      - Latitude
+    data_type: number
+    data_shape: continuous
+  - variable: Longitude
+    display_name: Longitude
+    provider_label:
+      - Longitude
+    data_type: number
+    data_shape: continuous
+  - variable: Habitat
+    display_name: Habitat
+    provider_label:
+      - Habitat
+    data_type: string
+    data_shape: categorical
+
+categories: []

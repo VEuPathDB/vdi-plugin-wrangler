@@ -1,0 +1,95 @@
+name: site
+display_name: collection site
+display_name_plural: collection sites
+
+id_columns:
+  - id_column: Site.Id
+    entity_name: site
+
+variables:
+  - variable: Latitude
+    provider_label:
+      - Latitude
+    display_name: Latitude
+    stable_id: OBI_0001620
+    data_type: number
+    data_shape: continuous
+    display_type: latitude
+  - variable: Longitude
+    provider_label:
+      - Longitude
+    display_name: Longitude
+    stable_id: OBI_0001621
+    data_type: longitude
+    data_shape: continuous
+    display_type: longitude
+  - variable: Habitat
+    provider_label:
+      - Habitat
+    display_name: Habitat
+    data_type: string
+    data_shape: categorical
+  - variable: geohash_1
+    provider_label:
+      - geohash_1
+    display_name: Geohash (precision 1)
+    stable_id: EUPATH_0043203
+    data_type: string
+    data_shape: categorical
+    display_type: geoaggregator
+    hidden:
+      - everywhere
+  - variable: geohash_2
+    provider_label:
+      - geohash_2
+    display_name: Geohash (precision 2)
+    stable_id: EUPATH_0043204
+    data_type: string
+    data_shape: categorical
+    display_type: geoaggregator
+    hidden:
+      - everywhere
+  - variable: geohash_3
+    provider_label:
+      - geohash_3
+    display_name: Geohash (precision 3)
+    stable_id: EUPATH_0043205
+    data_type: string
+    data_shape: categorical
+    display_type: geoaggregator
+    hidden:
+      - everywhere
+  - variable: geohash_4
+    provider_label:
+      - geohash_4
+    display_name: Geohash (precision 4)
+    stable_id: EUPATH_0043206
+    data_type: string
+    data_shape: categorical
+    display_type: geoaggregator
+    hidden:
+      - everywhere
+  - variable: geohash_5
+    provider_label:
+      - geohash_5
+    display_name: Geohash (precision 5)
+    stable_id: EUPATH_0043207
+    data_type: string
+    data_shape: categorical
+    display_type: geoaggregator
+    hidden:
+      - everywhere
+  - variable: geohash_6
+    provider_label:
+      - geohash_6
+    display_name: Geohash (precision 6)
+    stable_id: EUPATH_0043208
+    data_type: string
+    data_shape: categorical
+    display_type: geoaggregator
+    hidden:
+      - everywhere
+
+categories: []
+collections: []
+
