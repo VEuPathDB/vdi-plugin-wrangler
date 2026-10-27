@@ -5,12 +5,19 @@
 #'
 #' Expects STF-format TSV files and optional STF YAML metadata
 #'
+#' STF uploads are not expected to carry EDA geo metadata or geohash
+#' (geoaggregator) variables, so these are inferred here for every entity.
+#' `infer_geo_variables_for_eda()` is idempotent, so any geohash columns
+#' already present are regenerated rather than duplicated.
+#'
 wrangle <- function(input_dir) {
   check_stf_files_are_utf8(input_dir)
 
   study <- tryCatch(
     study_from_stf(input_dir, validate = FALSE) %>%
-      map_entities(~ .x %>% set_variable_display_names_from_provider_labels()),
+      map_entities(~ .x %>%
+        infer_geo_variables_for_eda() %>%
+        set_variable_display_names_from_provider_labels()),
     error = function(e) {
       stop_validation_error(
         user_msg = "Your STF upload could not be parsed. Please check that the entity TSV and YAML files are correctly formatted.",
