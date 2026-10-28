@@ -1,0 +1,5 @@
+{
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "Reserved column name 'geneID__'",
+  "expected_user_error_regex": "reserved name"
+}
