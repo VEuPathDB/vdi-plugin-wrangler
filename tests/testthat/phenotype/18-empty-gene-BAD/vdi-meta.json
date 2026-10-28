@@ -1,0 +1,5 @@
+{
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "Empty values in 'gene' column",
+  "expected_user_error_regex": "empty values"
+}

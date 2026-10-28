@@ -1,5 +1,0 @@
-{
-  "test_expectation": "fail",
-  "expected_technical_error_regex": "[Nn]o numeric column",
-  "expected_user_error_regex": "at least one numeric column"
-}
