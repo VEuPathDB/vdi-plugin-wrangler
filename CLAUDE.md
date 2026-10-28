@@ -77,11 +77,11 @@ The system is extensible via datatype-specific wrangler scripts:
 - Available datatypes: `phenotype`, `stf`, `isasimple`, `rnaseqrc`
 
 **Phenotype Wrangler** (`lib/R/wrangle-phenotype.R`):
-- Expects exactly one `.txt` or `.tsv` file
-- First column must be `geneID` (no duplicates allowed)
-- Must have at least one numeric column
-- Creates a `gene` variable column (copy of `geneID`) with stable_id `VEUPATHDB_GENE_ID`
-- Demotes extra ID columns to regular variables
+- Expects exactly one `.txt`, `.tsv` or `.csv` file
+- First column must be `gene` (no duplicate or empty values)
+- Must have at least one other numeric or categorical (string) column (a mix is allowed)
+- Opaquely prepends a `geneID__` copy as the entity ID column (a user column named `geneID__` is rejected); `gene` is a regular variable with stable_id `VEUPATHDB_GENE_ID`
+- All user columns are regular variables
 
 **STF Wrangler** (`lib/R/wrangle-stf.R`):
 - Simple wrapper around `study_from_stf(input_dir)` from the study.wrangler package
