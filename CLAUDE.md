@@ -79,7 +79,7 @@ The system is extensible via datatype-specific wrangler scripts:
 **Phenotype Wrangler** (`lib/R/wrangle-phenotype.R`):
 - Expects exactly one `.txt`, `.tsv` or `.csv` file
 - First column must be `gene` (no duplicate or empty values)
-- Must have at least one numeric column
+- Must have at least one other numeric or categorical (string) column (a mix is allowed)
 - Opaquely prepends a `geneID__` copy as the entity ID column (a user column named `geneID__` is rejected); `gene` is a regular variable with stable_id `VEUPATHDB_GENE_ID`
 - All user columns are regular variables
 

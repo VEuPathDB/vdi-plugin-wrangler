@@ -1,0 +1,5 @@
+{
+  "test_expectation": "fail",
+  "expected_technical_error_regex": "No numeric or categorical column",
+  "expected_user_error_regex": "at least one other numeric or categorical column"
+}

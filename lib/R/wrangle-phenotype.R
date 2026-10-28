@@ -98,14 +98,15 @@ wrangle <- function(input_dir) {
   # set default display names for any other variables that need it
   entity <- entity %>% set_variable_display_names_from_provider_labels()
 
-  # check there's a number variable
-  number_variables <- entity %>%
+  # check there's at least one other numeric or categorical (string) variable
+  # ('gene' itself is a string variable, so it must be excluded)
+  value_variables <- entity %>%
     get_variable_metadata() %>%
-    filter(data_type %in% c('number', 'integer'))
-  if (nrow(number_variables) == 0) {
+    filter(variable != 'gene', data_type %in% c('number', 'integer', 'string'))
+  if (nrow(value_variables) == 0) {
     stop_validation_error(
-      user_msg = "Your data file must contain at least one numeric column (in addition to the gene column).",
-      technical_msg = paste("No numeric column found in:", input_file),
+      user_msg = "Your data file must contain at least one other numeric or categorical column (in addition to the gene column).",
+      technical_msg = paste("No numeric or categorical column found in:", input_file),
       file = input_file
     )
   }
