@@ -181,7 +181,7 @@ ARG APICOMMONDATA_COMMIT_HASH=08aabc3a02b249e29282ca9a6d0bc8b5d024b2a8 \
 COPY bin/buildGus.bash /usr/bin/buildGus.bash
 RUN /usr/bin/buildGus.bash
 
-ARG LIB_VDI_PLUGIN_EDA_GIT_REF="a09a1606018612696e0cf177bd571e089b36f91b"
+ARG LIB_VDI_PLUGIN_EDA_GIT_REF=9cc459a0b4265c0b91e9d12afbad46dc91b68966
 RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cd vdi-lib-plugin-eda \
     && git checkout ${LIB_VDI_PLUGIN_EDA_GIT_REF} \
@@ -213,7 +213,7 @@ RUN R -e "for (i in 1:3) { \
 RUN R -e "install.packages('this.path'); \
   if (!requireNamespace('this.path', quietly=TRUE)) quit(status=1)"
 
-ARG LIB_PERL_GIT_COMMIT_SHA=c2c5bfb65b649f179282572ac59afc6ff43e9420
+ARG LIB_PERL_GIT_COMMIT_SHA=29d85dc30bf641a52fb596f53d5ca8428e1801d1
 RUN git clone https://github.com/VEuPathDB/vdi-lib-perl-utils.git \
   && cd vdi-lib-perl-utils \
   && git checkout ${LIB_PERL_GIT_COMMIT_SHA} \
