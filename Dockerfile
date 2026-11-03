@@ -185,8 +185,7 @@ ARG LIB_VDI_PLUGIN_EDA_GIT_REF=9cc459a0b4265c0b91e9d12afbad46dc91b68966
 RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cd vdi-lib-plugin-eda \
     && git checkout ${LIB_VDI_PLUGIN_EDA_GIT_REF} \
-    && mkdir -p /opt/veupathdb/lib/perl /opt/veupathdb/bin \
-    && cp lib/perl/*.pm /opt/veupathdb/lib/perl \
+    && mkdir /opt/veupathdb/bin \
     && cp bin/* /opt/veupathdb/bin
 
 ARG STUDY_WRANGLER_GIT_REF="v1.0.56"
