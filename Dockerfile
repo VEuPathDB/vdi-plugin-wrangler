@@ -186,7 +186,7 @@ RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cd vdi-lib-plugin-eda \
     && git checkout ${LIB_VDI_PLUGIN_EDA_GIT_REF} \
     && mkdir -p /opt/veupathdb/lib/perl /opt/veupathdb/bin \
-    && cp lib/perl/VdiStudyHandlerCommon.pm /opt/veupathdb/lib/perl \
+    && cp lib/perl/*.pm /opt/veupathdb/lib/perl \
     && cp bin/* /opt/veupathdb/bin
 
 ARG STUDY_WRANGLER_GIT_REF="v1.0.56"
@@ -213,7 +213,7 @@ RUN R -e "for (i in 1:3) { \
 RUN R -e "install.packages('this.path'); \
   if (!requireNamespace('this.path', quietly=TRUE)) quit(status=1)"
 
-ARG LIB_PERL_GIT_COMMIT_SHA=29d85dc30bf641a52fb596f53d5ca8428e1801d1
+ARG LIB_PERL_GIT_COMMIT_SHA=9140a27dd476b6caaface44dd4cd797cabcaca93
 RUN git clone https://github.com/VEuPathDB/vdi-lib-perl-utils.git \
   && cd vdi-lib-perl-utils \
   && git checkout ${LIB_PERL_GIT_COMMIT_SHA} \
