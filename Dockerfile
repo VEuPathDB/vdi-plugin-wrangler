@@ -181,7 +181,7 @@ ARG APICOMMONDATA_COMMIT_HASH=08aabc3a02b249e29282ca9a6d0bc8b5d024b2a8 \
 COPY bin/buildGus.bash /usr/bin/buildGus.bash
 RUN /usr/bin/buildGus.bash
 
-ARG LIB_VDI_PLUGIN_EDA_GIT_REF=9cc459a0b4265c0b91e9d12afbad46dc91b68966
+ARG LIB_VDI_PLUGIN_EDA_GIT_REF=e5f76e128687cd33a5faf84b6df05074e7fa35de
 RUN git clone https://github.com/VEuPathDB/vdi-lib-plugin-eda.git \
     && cd vdi-lib-plugin-eda \
     && git checkout ${LIB_VDI_PLUGIN_EDA_GIT_REF} \
