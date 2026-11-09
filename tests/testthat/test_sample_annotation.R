@@ -311,3 +311,16 @@ test_that("one sample per factor level is suitable", {
   entity <- build_sample_entity(ann, paste0("S", 1:4))
   expect_true(check_deseq_suitability(entity))
 })
+
+test_that("sampleId alone does not make an annotation suitable for DESeq", {
+  # sampleId is unique per sample, so it always has >= 2 distinct values; it
+  # must be excluded like label or every dataset would pass the check.
+  ann <- list(
+    profileSetName = "test", factors = list(),
+    samples = list(list(sampleId = "S1", label = "a", factors = list()),
+                   list(sampleId = "S2", label = "b", factors = list()))
+  )
+  entity <- build_sample_entity(ann, c("S1", "S2"))
+  expect_true("sampleId" %in% (entity %>% get_variable_metadata() %>% pull(variable)))
+  expect_error(check_deseq_suitability(entity), "VALIDATION ERROR")
+})

@@ -89,9 +89,9 @@ infer_stf_type <- function(values) {
 #'
 #' Writes `entity-sample.tsv` and `entity-sample.yaml` into `output_dir`.
 #' The TSV has one row per sample, with a `sample.ID \\ Descriptors` header
-#' cell marking the ID column, a `label` column, and one dotted column per
+#' cell marking the ID column, a `sampleId` column (a copy of the ID, so samples can be filtered on), a `label` column, and one dotted column per
 #' annotation factor. The YAML declares a `sample` entity with a matching
-#' `id_columns` entry and one `variables` entry per TSV column (`label` is
+#' `id_columns` entry and one `variables` entry per TSV column (`sampleId` and `label` are
 #' always `string`/`categorical`; each factor's type is inferred from its
 #' values via `infer_stf_type()`).
 #'
@@ -119,7 +119,18 @@ annotations_to_stf <- function(annotations, output_dir) {
     factor_keys
   )
 
-  header <- c("sample.ID \\\\ Descriptors", "label", factor_cols)
+  # `sampleId` and `label` are fixed columns; a factor of the same name would
+  # produce a duplicate column. The annotation step feeds this error back to
+  # the model on its one retry, so say what to do about it.
+  reserved <- intersect(factor_cols, c("sampleId", "label"))
+  if (length(reserved) > 0) {
+    stop(sprintf(
+      "Factor name(s) %s are reserved (they are fixed sample columns); choose a different factor key.",
+      paste0("'", reserved, "'", collapse = ", ")
+    ))
+  }
+
+  header <- c("sample.ID \\\\ Descriptors", "sampleId", "label", factor_cols)
 
   row_strings <- vapply(seq_along(samples), function(i) {
     s <- samples[[i]]
@@ -131,16 +142,29 @@ annotations_to_stf <- function(annotations, output_dir) {
       v <- factor_values[[key]][i]
       if (is.na(v)) "" else .tsv_cell(v)
     }, character(1))
-    paste(c(.tsv_cell(s$sampleId), .tsv_cell(s$label), row_factor_vals), collapse = "\t")
+    paste(c(.tsv_cell(s$sampleId), .tsv_cell(s$sampleId), .tsv_cell(s$label), row_factor_vals), collapse = "\t")
   }, character(1))
 
   tsv_path <- file.path(output_dir, "entity-sample.tsv")
   writeLines(c(paste(header, collapse = "\t"), row_strings), tsv_path)
 
+  # `sampleId` repeats the entity ID (sample.ID) as an ordinary variable so
+  # that individual samples can be filtered on in the UI (e.g. outliers on a
+  # PCA plot); entity ID columns are not themselves filterable.
+  sample_id_variable <- list(
+    variable = "sampleId",
+    provider_label = list("sampleId"),
+    display_name = "Sample ID",
+    definition = "The sample IDs provided as column headers in the uploaded counts file(s)",
+    data_type = "string",
+    data_shape = "categorical"
+  )
+
   label_variable <- list(
     variable = "label",
     provider_label = list("label"),
     display_name = "label",
+    definition = "A short summary of each sample's factor values, combined into one label",
     data_type = "string",
     data_shape = "categorical"
   )
@@ -165,7 +189,7 @@ annotations_to_stf <- function(annotations, output_dir) {
     display_name = "Sample",
     display_name_plural = "Samples",
     id_columns = list(list(id_column = "sample.ID", entity_name = "sample")),
-    variables = c(list(label_variable), factor_variables),
+    variables = c(list(sample_id_variable, label_variable), factor_variables),
     categories = list(),
     collections = list()
   )

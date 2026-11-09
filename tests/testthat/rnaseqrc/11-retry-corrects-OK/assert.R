@@ -14,6 +14,12 @@ assert <- function(study, output_dir) {
   expect_equal(length(ids), 4)
   expect_false("S9" %in% ids)
 
+  # sampleId is exposed as an ordinary variable (so samples can be filtered
+  # in the UI) and mirrors the entity ID.
+  sample_data <- samples %>% get_data()
+  expect_true("sampleId" %in% (samples %>% get_variable_metadata() %>% pull(variable)))
+  expect_equal(sample_data$sampleId, sample_data$sample.ID)
+
   counts <- study %>% get_entity("HTSeq counts")
   expect_equal(counts %>% get_data() %>% nrow(), 40)  # 10 genes x 4 samples
 }

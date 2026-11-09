@@ -477,7 +477,8 @@ check_deseq_suitability <- function(entity) {
   n_samples <- nrow(data)
 
   vars <- entity %>% get_variable_metadata() %>% pull(variable)
-  vars <- setdiff(vars, "label")
+  # sampleId (unique per sample by construction) and label are not factors.
+  vars <- setdiff(vars, c("sampleId", "label"))
 
   has_usable_factor <- any(vapply(vars, function(v) {
     values <- data[[v]]
