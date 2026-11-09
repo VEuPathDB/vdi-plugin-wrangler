@@ -89,9 +89,10 @@ test_that("a sample with no label does not shift the following columns", {
   row1_fields <- strsplit(lines[2], "\t", fixed = TRUE)[[1]]
   expect_length(row1_fields, length(header_fields))
   expect_equal(row1_fields[1], "S1")
-  expect_equal(row1_fields[2], "") # label: empty, not eaten by the shift
-  expect_equal(row1_fields[3], "24") # timepoint: still in its own column
-  expect_equal(row1_fields[4], "infected") # infection: still in its own column
+  expect_equal(row1_fields[2], "S1") # sampleId
+  expect_equal(row1_fields[3], "") # label: empty, not eaten by the shift
+  expect_equal(row1_fields[4], "24") # timepoint: still in its own column
+  expect_equal(row1_fields[5], "infected") # infection: still in its own column
 })
 
 test_that("a literal tab or newline in an LLM-authored value does not shift columns", {
@@ -126,4 +127,45 @@ test_that("a factor key containing a space becomes a dotted column", {
   tsv <- annotations_to_stf(ann, d)
   expect_true("cell.type" %in% strsplit(readLines(tsv)[1], "\t", fixed = TRUE)[[1]])
   expect_true(isTRUE(entity_from_stf(tsv) %>% quiet() %>% validate()))
+})
+
+test_that("sampleId is exposed as a string-categorical variable left of label", {
+  d <- tempfile("stf_"); dir.create(d)
+  tsv <- annotations_to_stf(ANN, d)
+  header <- strsplit(readLines(tsv)[1], "\t", fixed = TRUE)[[1]]
+  expect_equal(header[1:3], c("sample.ID \\\\ Descriptors", "sampleId", "label"))
+  # values are the verbatim sample IDs (no prefix)
+  rows <- strsplit(readLines(tsv)[-1], "\t", fixed = TRUE)
+  expect_equal(vapply(rows, `[`, "", 2), c("S1", "S2", "S3"))
+
+  y <- yaml::read_yaml(file.path(d, "entity-sample.yaml"))
+  by_name <- setNames(y$variables, vapply(y$variables, function(v) v$variable, character(1)))
+  expect_equal(by_name$sampleId$display_name, "Sample ID")
+  expect_equal(by_name$sampleId$provider_label[[1]], "sampleId")
+  expect_equal(by_name$sampleId$data_type, "string")
+  expect_equal(by_name$sampleId$data_shape, "categorical")
+  expect_true(nzchar(by_name$sampleId$definition))
+  expect_true(nzchar(by_name$label$definition))
+})
+
+test_that("sampleId loads as a regular variable alongside the sample.ID entity ID", {
+  d <- tempfile("stf_"); dir.create(d)
+  entity <- entity_from_stf(annotations_to_stf(ANN, d))
+  expect_true(isTRUE(entity %>% quiet() %>% validate()))
+  expect_true("sampleId" %in% (entity %>% get_variable_metadata() %>% pull(variable)))
+  expect_equal(entity %>% get_data() %>% pull(sampleId),
+               entity %>% get_data() %>% pull(sample.ID))
+})
+
+test_that("a factor named sampleId or label is rejected rather than duplicating a column", {
+  for (key in c("sampleId", "label")) {
+    ann <- ANN
+    ann$factors <- setNames(list(list(displayName = "x")), key)
+    ann$samples <- list(
+      list(sampleId = "S1", label = "a", factors = setNames(list("p"), key)),
+      list(sampleId = "S2", label = "b", factors = setNames(list("q"), key))
+    )
+    d <- tempfile("stf_"); dir.create(d)
+    expect_error(annotations_to_stf(ann, d), "reserved", info = key)
+  }
 })

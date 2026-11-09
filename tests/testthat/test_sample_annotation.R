@@ -311,3 +311,23 @@ test_that("one sample per factor level is suitable", {
   entity <- build_sample_entity(ann, paste0("S", 1:4))
   expect_true(check_deseq_suitability(entity))
 })
+
+test_that("sampleId alone does not make an annotation suitable for DESeq", {
+  # sampleId is unique per sample, so it always has >= 2 distinct values; it
+  # must be excluded like label or every dataset would pass the check.
+  ann <- list(
+    profileSetName = "test", factors = list(),
+    samples = list(list(sampleId = "S1", label = "a", factors = list()),
+                   list(sampleId = "S2", label = "b", factors = list()))
+  )
+  entity <- build_sample_entity(ann, c("S1", "S2"))
+  expect_true("sampleId" %in% (entity %>% get_variable_metadata() %>% pull(variable)))
+  expect_error(check_deseq_suitability(entity), "VALIDATION ERROR")
+})
+
+test_that("the annotation prompt tells the model sampleId and label are reserved factor keys", {
+  p <- annotation_prompt(c("S1", "S2"), "info")
+  expect_match(p, "reserved", fixed = TRUE)
+  expect_match(p, "`sampleId`", fixed = TRUE)
+  expect_match(p, "`label`", fixed = TRUE)
+})
