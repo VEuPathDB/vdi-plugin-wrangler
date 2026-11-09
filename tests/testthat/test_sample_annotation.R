@@ -324,3 +324,10 @@ test_that("sampleId alone does not make an annotation suitable for DESeq", {
   expect_true("sampleId" %in% (entity %>% get_variable_metadata() %>% pull(variable)))
   expect_error(check_deseq_suitability(entity), "VALIDATION ERROR")
 })
+
+test_that("the annotation prompt tells the model sampleId and label are reserved factor keys", {
+  p <- annotation_prompt(c("S1", "S2"), "info")
+  expect_match(p, "reserved", fixed = TRUE)
+  expect_match(p, "`sampleId`", fixed = TRUE)
+  expect_match(p, "`label`", fixed = TRUE)
+})
