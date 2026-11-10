@@ -1,0 +1,10 @@
+{
+  "comment": "Hand-edited: samples array emptied.",
+  "test_expectation": "fail",
+  "type": {
+    "name": "rnaseqrc",
+    "version": "1.0"
+  },
+  "expected_user_error_regex": "must be a non-empty list",
+  "expected_technical_error_regex": "sample-annotations structure check failed"
+}

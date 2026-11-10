@@ -1,0 +1,10 @@
+{
+  "comment": "Hand-edited: S3 lost its sampleId.",
+  "test_expectation": "fail",
+  "type": {
+    "name": "rnaseqrc",
+    "version": "1.0"
+  },
+  "expected_user_error_regex": "Sample #3 has no \\\"sampleId\\\"",
+  "expected_technical_error_regex": "sample-annotations structure check failed"
+}

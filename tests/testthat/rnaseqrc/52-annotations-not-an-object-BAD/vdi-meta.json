@@ -1,0 +1,10 @@
+{
+  "comment": "Valid JSON but the top level is an array.",
+  "test_expectation": "fail",
+  "type": {
+    "name": "rnaseqrc",
+    "version": "1.0"
+  },
+  "expected_user_error_regex": "top level of the file must be a JSON object",
+  "expected_technical_error_regex": "sample-annotations structure check failed"
+}

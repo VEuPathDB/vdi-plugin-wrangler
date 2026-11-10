@@ -1,0 +1,7 @@
+{
+  "comment": "timepoint is declared but omitted, null or empty for every sample.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_user_error_regex": "Factor\\(s\\) 'timepoint' are described in .*factors.* but no sample has a value",
+  "expected_technical_error_regex": "sample-annotations structure check failed"
+}

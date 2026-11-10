@@ -1,0 +1,9 @@
+{ "profileSetName": "x",
+  "factors": {
+    "treatment": { "displayName": "treatment", "definition": "d" },
+    "timepoint": { "displayName": "timepoint", "definition": "Hours after treatment" } },
+  "samples": [
+    { "sampleId": "S1", "label": "a", "factors": { "treatment": "infected" } },
+    { "sampleId": "S2", "label": "b", "factors": { "treatment": "infected", "timepoint": null } },
+    { "sampleId": "S3", "label": "c", "factors": { "treatment": "control", "timepoint": "" } },
+    { "sampleId": "S4", "label": "d", "factors": { "treatment": "control" } } ] }

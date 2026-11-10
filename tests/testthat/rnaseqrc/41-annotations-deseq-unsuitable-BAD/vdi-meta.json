@@ -1,0 +1,10 @@
+{
+  "comment": "Structurally valid annotations whose only factor is constant across samples: must fail the DESeq-suitability check on the annotations path.",
+  "test_expectation": "fail",
+  "type": {
+    "name": "rnaseqrc",
+    "version": "1.0"
+  },
+  "expected_technical_error_regex": "DESeq-suitability check failed",
+  "expected_user_error_regex": "does not define a factor suitable for differential expression analysis"
+}

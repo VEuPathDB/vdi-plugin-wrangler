@@ -20,9 +20,17 @@ Input directory requirements
 * gene IDs must not repeat within a file
 * for a stranded pair, `sense-counts` and `antisense-counts` must describe the exact same set of sample columns and the exact same set of gene rows (column/row order does not matter) — a mismatch in either is rejected rather than silently dropped
 
-## The `sample-info` file
+## Sample metadata: `sample-info` or `sample-annotations`
 
-Required, and must not be empty. It describes your samples in whatever form is most convenient — it does not need to be a structured table. Accepted forms include:
+Provide exactly one of the following. Supplying both, or neither, is rejected.
+
+### The `sample-annotations` file
+
+A JSON file (extension `.json`) holding ready-made sample annotations: a `profileSetName`, a `factors` object, and a `samples` array with one entry per sample (`sampleId`, `label`, `factors`). This is what the website's sample-annotation preview/editor produces. Every factor in `factors` needs a `displayName` and a `definition` (`unit` is optional). Each sample's `factors` may only use declared factors. If a factor does not apply to a sample (e.g. a control outside a time series has no `timepoint`), omit that key for the sample (`null` and `""` are treated the same way); every declared factor must have a value for at least one sample. Problems such as missing or misspelled keys, duplicate or missing `sampleId`s, and undeclared factors are reported in plain language, all at once. No AI processing is involved: the file is converted as-is, and the import stops with an error if it is not valid JSON, if its sample IDs do not match the sample IDs in your count files exactly, or if it fails the differential-expression suitability check below. There is no automatic retry.
+
+### The `sample-info` file
+
+Required if no `sample-annotations` file is supplied, and must not be empty. It describes your samples in whatever form is most convenient — it does not need to be a structured table. Accepted forms include:
 
 **Size limit: 100,000 bytes.** This comfortably accommodates a full Methods-section description of your samples (a typical manuscript Methods section is well under half this size), so it should never constrain a legitimate upload. If your file is larger, trim it down to just the sample-level metadata needed to group and label your samples — you don't need to include anything unrelated to sample identity or experimental grouping.
 

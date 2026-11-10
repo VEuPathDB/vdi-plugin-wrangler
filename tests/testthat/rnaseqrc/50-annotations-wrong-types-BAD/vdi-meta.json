@@ -1,0 +1,10 @@
+{
+  "comment": "Hand-edited: factors is a list and a sample's factors is a string.",
+  "test_expectation": "fail",
+  "type": {
+    "name": "rnaseqrc",
+    "version": "1.0"
+  },
+  "expected_user_error_regex": "must be an object keyed by factor name",
+  "expected_technical_error_regex": "sample-annotations structure check failed"
+}

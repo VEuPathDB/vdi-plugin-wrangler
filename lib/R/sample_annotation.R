@@ -319,6 +319,205 @@ build_sample_entity <- function(annotations, authoritative_ids) {
   entity %>% set_variable_metadata("label", is_featured = TRUE, display_order = 1)
 }
 
+#' Structural check of a parsed `sample-annotations` object
+#'
+#' The annotations may have been hand-edited, so before handing them to
+#' `build_sample_entity()` (whose messages are written for an LLM retry and
+#' are cryptic for a person) check the shape and cross-references and report
+#' every problem found, up to a cap, in plain language.
+#'
+#' Required: top-level object; `factors` (named object, each factor with a
+#' non-empty string `displayName` and `definition`; `unit`, if present, a
+#' string); `samples` (non-empty list, each with a non-empty string
+#' `sampleId`, unique across samples, and a `factors` object using only
+#' declared factors, each with a scalar value). A sample that does not take
+#' a factor (e.g. a control outside a time series) omits the key; `null` and
+#' `""` are accepted as equivalent. Every declared factor must have a value
+#' for at least one sample.
+#'
+#' @param annotations parsed annotation list (`simplifyVector = FALSE`)
+#' @param max_problems cap on the number of problems reported
+#' @return invisible `TRUE`, or `stop_transformation_error()`
+check_annotations_structure <- function(annotations, max_problems = 10L) {
+  fail <- function(problems) {
+    shown <- head(problems, max_problems)
+    more <- length(problems) - length(shown)
+    stop_transformation_error(
+      user_msg = paste0(
+        "Your sample annotations file has the following problem(s):\n- ",
+        paste(shown, collapse = "\n- "),
+        if (more > 0) sprintf("\n- ...and %d more.", more) else ""
+      ),
+      technical_msg = paste(
+        "sample-annotations structure check failed:",
+        paste(problems, collapse = " | ")
+      )
+    )
+  }
+
+  is_obj <- function(x) is.list(x) && !is.null(names(x)) && all(names(x) != "")
+  is_nonempty_string <- function(x) {
+    is.character(x) && length(x) == 1 && !is.na(x) && nzchar(trimws(x))
+  }
+  is_scalar <- function(x) {
+    length(x) == 1 && !is.list(x) && !is.na(x)
+  }
+
+  if (!is_obj(annotations)) {
+    fail("The top level of the file must be a JSON object with \"factors\" and \"samples\".")
+  }
+
+  problems <- character(0)
+  add <- function(msg) problems <<- c(problems, msg)
+
+  # --- factors ---
+  factors <- annotations$factors
+  factor_keys <- character(0)
+  if (is.null(factors)) {
+    add("Missing \"factors\": it must describe each factor (displayName and definition).")
+  } else if (!is_obj(factors) && !(is.list(factors) && length(factors) == 0)) {
+    add("\"factors\" must be an object keyed by factor name, not a list or a single value.")
+  } else {
+    factor_keys <- names(factors)
+    if (is.null(factor_keys)) factor_keys <- character(0)
+    for (key in factor_keys) {
+      f <- factors[[key]]
+      if (!is_obj(f)) {
+        add(sprintf("Factor '%s' must be an object with \"displayName\" and \"definition\".", key))
+        next
+      }
+      for (field in c("displayName", "definition")) {
+        if (!is_nonempty_string(f[[field]])) {
+          add(sprintf("Factor '%s' is missing a non-empty \"%s\".", key, field))
+        }
+      }
+      if (!is.null(f$unit) && !is_nonempty_string(f$unit)) {
+        add(sprintf("Factor '%s' has an invalid \"unit\": it must be a non-empty string if present.", key))
+      }
+    }
+    if (length(factor_keys) == 0) {
+      add("\"factors\" is empty: describe at least one factor.")
+    }
+  }
+
+  # --- samples ---
+  samples <- annotations$samples
+  if (is.null(samples)) {
+    add("Missing \"samples\": it must list one entry per sample.")
+  } else if (!is.list(samples) || is_obj(samples) || length(samples) == 0) {
+    add("\"samples\" must be a non-empty list with one entry per sample.")
+  } else {
+    ids <- character(0)
+    has_value <- list()
+    for (i in seq_along(samples)) {
+      s <- samples[[i]]
+      if (!is_obj(s)) {
+        add(sprintf("Sample #%d must be an object with \"sampleId\", \"label\" and \"factors\".", i))
+        next
+      }
+      has_id <- is_nonempty_string(s$sampleId)
+      ref <- if (has_id) sprintf("Sample '%s'", s$sampleId) else sprintf("Sample #%d", i)
+      if (!has_id) {
+        add(sprintf("%s has no \"sampleId\" (it must be a non-empty string).", ref))
+      } else {
+        ids <- c(ids, s$sampleId)
+      }
+
+      sf <- s$factors
+      if (!is_obj(sf) && !(is.list(sf) && length(sf) == 0)) {
+        add(sprintf("%s must have a \"factors\" object giving a value for each factor.", ref))
+        next
+      }
+      sf_keys <- names(sf)
+      if (is.null(sf_keys)) sf_keys <- character(0)
+
+      undeclared <- setdiff(sf_keys, factor_keys)
+      if (length(undeclared) > 0) {
+        add(sprintf(
+          "%s uses factor(s) not described in \"factors\": %s.",
+          ref, paste0("'", undeclared, "'", collapse = ", ")
+        ))
+      }
+      for (key in intersect(sf_keys, factor_keys)) {
+        v <- sf[[key]]
+        if (is.null(v) || identical(v, "")) next  # no value for this sample
+        if (!is_scalar(v)) {
+          add(sprintf("%s has an invalid value for factor '%s': it must be a single text or number.", ref, key))
+        } else {
+          has_value[[key]] <- TRUE
+        }
+      }
+    }
+    # A declared factor that no sample takes is an empty column.
+    unused <- factor_keys[!vapply(factor_keys, function(k) isTRUE(has_value[[k]]), logical(1))]
+    if (length(unused) > 0) {
+      add(sprintf(
+        "Factor(s) %s are described in \"factors\" but no sample has a value for them.",
+        paste0("'", unused, "'", collapse = ", ")
+      ))
+    }
+    dup <- unique(ids[duplicated(ids)])
+    if (length(dup) > 0) {
+      add(sprintf(
+        "Duplicate sampleId(s): %s. Each sample must appear once.",
+        paste0("'", dup, "'", collapse = ", ")
+      ))
+    }
+  }
+
+  if (length(problems) > 0) fail(problems)
+  invisible(TRUE)
+}
+
+#' Build a validated sample entity from an uploaded `sample-annotations` file
+#'
+#' The no-LLM path: the annotations JSON (same schema the LLM produces) was
+#' prepared and reviewed upstream, so it is parsed and run through
+#' `build_sample_entity()` exactly once. There is no retry; any failure is a
+#' transformation error carrying the gate's message.
+#'
+#' @param path path to the uploaded annotations JSON file
+#' @param sample_ids character vector: the authoritative union of sample IDs
+#'   from the uploaded count files
+#' @return a validated `sample` Entity, or `stop_transformation_error()`
+sample_entity_from_annotations_file <- function(path, sample_ids) {
+  annotations <- tryCatch(
+    jsonlite::fromJSON(path, simplifyVector = FALSE),
+    error = function(e) {
+      stop_transformation_error(
+        user_msg = paste(
+          "Your sample annotations file is not valid JSON. Please correct it",
+          "and re-upload."
+        ),
+        technical_msg = paste0(
+          "sample-annotations file is not valid JSON (", path, "): ",
+          conditionMessage(e)
+        ),
+        file = path
+      )
+    }
+  )
+
+  check_annotations_structure(annotations)
+
+  tryCatch(
+    build_sample_entity(annotations, sample_ids),
+    error = function(e) {
+      stop_transformation_error(
+        user_msg = paste0(
+          "Your sample annotations could not be used: ",
+          sub("^The generated sample annotation", "The sample annotation", conditionMessage(e))
+        ),
+        technical_msg = paste0(
+          "build_sample_entity() failed on sample-annotations file ", path,
+          ": ", conditionMessage(e)
+        ),
+        file = path
+      )
+    }
+  )
+}
+
 #' Generate a validated sample entity from sample IDs and free-form metadata
 #'
 #' Calls `llm_json("annotate", ...)` with Sonnet, tries `build_sample_entity()`,
