@@ -1,0 +1,10 @@
+{
+  "comment": "Hand-edited: samples use a factor (timepoint) not declared in top-level factors.",
+  "test_expectation": "fail",
+  "type": {
+    "name": "rnaseqrc",
+    "version": "1.0"
+  },
+  "expected_user_error_regex": "Sample 'S1' uses factor\\(s\\) not described in \\\"factors\\\": 'timepoint'",
+  "expected_technical_error_regex": "sample-annotations structure check failed"
+}

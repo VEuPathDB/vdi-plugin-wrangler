@@ -1,0 +1,10 @@
+{
+  "comment": "Hand-edited: samples array renamed.",
+  "test_expectation": "fail",
+  "type": {
+    "name": "rnaseqrc",
+    "version": "1.0"
+  },
+  "expected_user_error_regex": "Missing \\\"samples\\\"",
+  "expected_technical_error_regex": "sample-annotations structure check failed"
+}

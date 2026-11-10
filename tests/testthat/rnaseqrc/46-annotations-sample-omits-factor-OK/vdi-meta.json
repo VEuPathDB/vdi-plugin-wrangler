@@ -1,0 +1,1 @@
+{ "comment": "Control samples S3/S4 omit timepoint entirely (the canonical way to say a factor does not apply).", "test_expectation": "pass", "type": { "name": "rnaseqrc", "version": "1.0" } }

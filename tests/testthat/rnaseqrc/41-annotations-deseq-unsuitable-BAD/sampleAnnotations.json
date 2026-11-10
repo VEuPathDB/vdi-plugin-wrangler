@@ -1,0 +1,12 @@
+{
+  "profileSetName": "Constant factor",
+  "factors": {
+    "strain": { "displayName": "strain", "definition": "Parasite strain, identical for every sample" }
+  },
+  "samples": [
+    { "sampleId": "S1", "label": "S1", "factors": { "strain": "3D7" } },
+    { "sampleId": "S2", "label": "S2", "factors": { "strain": "3D7" } },
+    { "sampleId": "S3", "label": "S3", "factors": { "strain": "3D7" } },
+    { "sampleId": "S4", "label": "S4", "factors": { "strain": "3D7" } }
+  ]
+}

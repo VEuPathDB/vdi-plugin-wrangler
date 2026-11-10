@@ -1,0 +1,10 @@
+{
+  "comment": "Hand-edited: top-level factors key removed, samples still carry factors.",
+  "test_expectation": "fail",
+  "type": {
+    "name": "rnaseqrc",
+    "version": "1.0"
+  },
+  "expected_user_error_regex": "Missing \\\"factors\\\"",
+  "expected_technical_error_regex": "sample-annotations structure check failed"
+}

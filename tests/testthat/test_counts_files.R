@@ -64,7 +64,7 @@ test_that("unstranded input is discovered", {
   write_manifest(d, "unstranded" = "HTSeq_run3.tsv", "sample-info" = "sample-info.txt")
   got <- discover_counts_files(d)
   expect_equal(got$mode, "unstranded")
-  expect_setequal(names(got$paths), c("unstranded", "sample_info"))
+  expect_setequal(names(got$paths), c("unstranded", "sample-info"))
   expect_equal(basename(got$paths[["unstranded"]]), "HTSeq_run3.tsv")
 })
 
@@ -75,7 +75,7 @@ test_that("stranded pair is discovered", {
                  "sample-info" = "sample-info.txt")
   got <- discover_counts_files(d)
   expect_equal(got$mode, "stranded")
-  expect_setequal(names(got$paths), c("sense", "antisense", "sample_info"))
+  expect_setequal(names(got$paths), c("sense", "antisense", "sample-info"))
   expect_equal(basename(got$paths[["sense"]]), "my_sense.tsv")
   expect_equal(basename(got$paths[["antisense"]]), "my_antisense.tsv")
 })
@@ -84,7 +84,7 @@ test_that("sample-info text is returned whole", {
   d <- make_input(list("my_counts.tsv" = TSV_OK, "sample-info.txt" = INFO_OK))
   write_manifest(d, "unstranded" = "my_counts.tsv", "sample-info" = "sample-info.txt")
   got <- discover_counts_files(d)
-  txt <- read_sample_info_text(got$paths[["sample_info"]])
+  txt <- read_sample_info_text(got$paths[["sample-info"]])
   expect_length(txt, 1)
   expect_match(txt, "infected")
   expect_match(txt, "\n")
@@ -139,7 +139,7 @@ test_that("a sample-info file just under the size cap is accepted", {
   d <- make_input(list("my_counts.tsv" = TSV_OK, "sample-info.txt" = big))
   write_manifest(d, "unstranded" = "my_counts.tsv", "sample-info" = "sample-info.txt")
   got <- discover_counts_files(d)
-  expect_setequal(names(got$paths), c("unstranded", "sample_info"))
+  expect_setequal(names(got$paths), c("unstranded", "sample-info"))
 })
 
 test_that("a sample-info file over the size cap is rejected, naming the limit", {
@@ -359,7 +359,7 @@ test_that("a non-UTF-8 sample-info file does not crash the emptiness check", {
   ))
   write_manifest(d, "unstranded" = "my_counts.tsv", "sample-info" = "sample-info.txt")
   got <- discover_counts_files(d)
-  expect_setequal(names(got$paths), c("unstranded", "sample_info"))
+  expect_setequal(names(got$paths), c("unstranded", "sample-info"))
 })
 
 # --- Task 3: manifest-driven discovery and its failure modes ---------------

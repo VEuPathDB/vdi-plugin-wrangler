@@ -1,0 +1,7 @@
+{
+  "comment": "The annotations name S9, which is absent from the count files, and omit S4. No retry on this path: the first failure stops the import.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "not present in the uploaded count files: S9",
+  "expected_user_error_regex": "not present in the uploaded count files: S9"
+}

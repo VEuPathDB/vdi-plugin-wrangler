@@ -1,0 +1,10 @@
+{
+  "comment": "Hand-edited: S4 duplicated over S3.",
+  "test_expectation": "fail",
+  "type": {
+    "name": "rnaseqrc",
+    "version": "1.0"
+  },
+  "expected_user_error_regex": "Duplicate sampleId\\(s\\): 'S4'",
+  "expected_technical_error_regex": "sample-annotations structure check failed"
+}

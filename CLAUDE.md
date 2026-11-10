@@ -88,7 +88,11 @@ The system is extensible via datatype-specific wrangler scripts:
 
 **rnaseqrc Wrangler** (`lib/R/wrangle-rnaseqrc.R`):
 - Bulk RNA-seq counts (a `sense-counts`/`antisense-counts` pair, or a single `unstranded-counts`
-  file) plus a free-form `sample-info` file. Builds a `sample` root entity (via an LLM-assisted
+  file) plus sample metadata: **either** a free-form `sample-info` file (LLM-annotated; up to two
+  attempts) **or** a ready-made `sample-annotations` JSON file (same schema as the LLM output; no
+  LLM call, no retry — phase 1 of retiring the LLM path, which phase 2 removes). Both or neither
+  is a manifest fault. Manifest role names are used directly as keys of the discovered `paths`.
+  Builds a `sample` root entity (via an LLM-assisted
   annotation step) and a tall `HTSeq counts` child entity from the deterministically-parsed counts.
   See `doc/rnaseq-rc.md` for the user-facing format contract.
 - The orchestrator (`wrangle-rnaseqrc.R`) sources its own sibling modules via

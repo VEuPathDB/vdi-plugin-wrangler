@@ -1,0 +1,6 @@
+{ "profileSetName": "x",
+  "samples": [
+    { "sampleId": "S1", "label": "a", "factors": { "treatment": "infected" } },
+    { "sampleId": "S2", "label": "b", "factors": { "treatment": "infected" } },
+    { "sampleId": "S3", "label": "c", "factors": { "treatment": "control" } },
+    { "sampleId": "S4", "label": "d", "factors": { "treatment": "control" } } ] }

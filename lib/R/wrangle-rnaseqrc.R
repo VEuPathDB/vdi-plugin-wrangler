@@ -70,13 +70,20 @@ wrangle <- function(input_dir) {
   merged     <- read_and_merge_counts(discovered)
   sample_ids <- counts_sample_ids(merged)
 
-  info_text <- read_sample_info_text(discovered$paths[["sample_info"]])
+  if ("sample-annotations" %in% names(discovered$paths)) {
+    # Annotations were prepared (and reviewed) upstream: no LLM involved.
+    samples <- sample_entity_from_annotations_file(
+      discovered$paths[["sample-annotations"]], sample_ids
+    )
+  } else {
+    info_text <- read_sample_info_text(discovered$paths[["sample-info"]])
 
-  if (classify_sample_ids(sample_ids) == "labels_uninformative") {
-    check_ids_present_in_sample_info(sample_ids, info_text)
+    if (classify_sample_ids(sample_ids) == "labels_uninformative") {
+      check_ids_present_in_sample_info(sample_ids, info_text)
+    }
+
+    samples <- generate_sample_entity(sample_ids, info_text)
   }
-
-  samples <- generate_sample_entity(sample_ids, info_text)
   check_deseq_suitability(samples)
 
   counts <- counts_entity(merged)

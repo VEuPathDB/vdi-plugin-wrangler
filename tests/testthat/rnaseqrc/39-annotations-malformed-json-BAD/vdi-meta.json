@@ -1,0 +1,7 @@
+{
+  "comment": "sampleAnnotations.json is not parseable JSON.",
+  "test_expectation": "fail",
+  "type": { "name": "rnaseqrc", "version": "1.0" },
+  "expected_technical_error_regex": "not valid JSON",
+  "expected_user_error_regex": "sample annotations file is not valid JSON"
+}
