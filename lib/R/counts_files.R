@@ -7,15 +7,9 @@
 #' This module has no awareness of the LLM-based sample-annotation step
 #' (see `lib/R/llm_client.R`) and must not depend on it.
 
-# Manifest role tokens mapped to their canonical key in the `paths` result of
-# `discover_counts_files()`. The keys are unchanged from the previous
-# stem-based scheme, so everything downstream is unaffected.
-.COUNTS_FILE_KEY_FOR_ROLE <- c(
-  "sense"       = "sense",
-  "antisense"   = "antisense",
-  "unstranded"  = "unstranded",
-  "sample-info" = "sample_info"
-)
+# Accepted manifest role tokens. They are also the names of the `paths`
+# result of `discover_counts_files()`.
+.COUNTS_FILE_ROLES <- c("sense", "antisense", "unstranded", "sample-info")
 
 MANIFEST_FILENAME <- "manifest.tsv"
 
@@ -100,7 +94,7 @@ SAMPLE_INFO_MAX_BYTES <- 100000L
   roles <- substr(lines, 1, tab_at - 1)
   files <- substr(lines, tab_at + 1, nchar(lines))
 
-  unknown <- roles[!roles %in% names(.COUNTS_FILE_KEY_FOR_ROLE)]
+  unknown <- roles[!roles %in% .COUNTS_FILE_ROLES]
   if (length(unknown) > 0) {
     stop_validation_error(
       user_msg = .MANIFEST_FAULT_USER_MSG,
@@ -157,7 +151,7 @@ SAMPLE_INFO_MAX_BYTES <- 100000L
 #'
 #' @param input_dir Path to the directory containing uploaded files
 #' @return list(mode = "stranded"|"unstranded", paths = named character vector).
-#'   `paths` always contains `sample_info`, plus either `unstranded`, or
+#'   `paths` always contains `sample-info`, plus either `unstranded`, or
 #'   both `sense` and `antisense`.
 discover_counts_files <- function(input_dir) {
   all_files <- list.files(input_dir, full.names = FALSE)
@@ -221,17 +215,14 @@ discover_counts_files <- function(input_dir) {
     )
   }
 
-  paths <- setNames(
-    file.path(input_dir, unname(manifest)),
-    unname(.COUNTS_FILE_KEY_FOR_ROLE[names(manifest)])
-  )
+  paths <- setNames(file.path(input_dir, unname(manifest)), names(manifest))
 
   # The upload form always emits a `sample-info` role (see
-  # rnaseq-rc-data-files.ts), so a missing `sample_info` key here can only
+  # rnaseq-rc-data-files.ts), so a missing `sample-info` key here can only
   # come from a malformed manifest -- a structural fault, not something a
   # user of the form could have caused. Same reasoning applies to the four
   # mode/pairing checks below.
-  if (!"sample_info" %in% names(paths)) {
+  if (!"sample-info" %in% names(paths)) {
     stop_validation_error(
       user_msg = .MANIFEST_FAULT_USER_MSG,
       technical_msg = paste("No sample-info role found in manifest for:", input_dir),
@@ -239,7 +230,7 @@ discover_counts_files <- function(input_dir) {
     )
   }
 
-  sample_info_lines <- readLines(paths[["sample_info"]], warn = FALSE)
+  sample_info_lines <- readLines(paths[["sample-info"]], warn = FALSE)
   # `useBytes = TRUE`, not `trimws()`: this file hasn't been decoded to a
   # known encoding yet (that only happens later, in read_sample_info_text()),
   # so for a Windows-1252/ISO-8859-1 upload these are raw bytes R's UTF-8
@@ -255,8 +246,8 @@ discover_counts_files <- function(input_dir) {
         "Your sample-info file is empty. Please provide sample metadata",
         "describing your samples."
       ),
-      technical_msg = paste("Empty sample-info file:", paths[["sample_info"]]),
-      file = paths[["sample_info"]]
+      technical_msg = paste("Empty sample-info file:", paths[["sample-info"]]),
+      file = paths[["sample-info"]]
     )
   }
 
@@ -285,9 +276,9 @@ discover_counts_files <- function(input_dir) {
       technical_msg = paste0(
         "sample-info file exceeds the ", SAMPLE_INFO_MAX_BYTES,
         "-byte cap: ", sample_info_size, " bytes in ",
-        paths[["sample_info"]]
+        paths[["sample-info"]]
       ),
-      file = paths[["sample_info"]]
+      file = paths[["sample-info"]]
     )
   }
 

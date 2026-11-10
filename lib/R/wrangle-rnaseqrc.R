@@ -70,7 +70,7 @@ wrangle <- function(input_dir) {
   merged     <- read_and_merge_counts(discovered)
   sample_ids <- counts_sample_ids(merged)
 
-  info_text <- read_sample_info_text(discovered$paths[["sample_info"]])
+  info_text <- read_sample_info_text(discovered$paths[["sample-info"]])
 
   if (classify_sample_ids(sample_ids) == "labels_uninformative") {
     check_ids_present_in_sample_info(sample_ids, info_text)
