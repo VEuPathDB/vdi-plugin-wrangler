@@ -144,6 +144,8 @@ cd /opt/veupathdb
 bin/run_tests.R
 ```
 
+**Note**: the final output of `bin/run_tests.R` is the per-test timings table, not the pass/fail summary. The `[ FAIL n | WARN n | SKIP n | PASS n ]` line appears earlier in the output, so don't pipe through `tail`; run it once and use `grep -E "FAIL|PASS"` (or capture the output to a file) rather than re-running to find the counts.
+
 Tests use `testthat` and run against example data in `tests/testthat/<datatype>/<test-name>/`.
 
 ### Test Structure
