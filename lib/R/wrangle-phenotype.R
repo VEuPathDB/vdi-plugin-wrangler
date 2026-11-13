@@ -91,6 +91,11 @@ wrangle <- function(input_dir) {
   # all user-supplied columns (including 'gene') are regular variables; 'geneID__' stays as the ID
   entity <- entity %>% redetect_columns_as_variables(user_column_names)
 
+  # preserve the uploaded column order (gene = 1, then the others) in the visualization system
+  for (i in seq_along(user_column_names)) {
+    entity <- entity %>% set_variable_metadata(user_column_names[[i]], display_order = i)
+  }
+
   # give the 'gene' column the stable_id that has been used elsewhere for phenotype datasets
   # e.g. in ApiCommonModel/Model/lib/wdk/model/records/geneTableQueries.xml
   entity <- entity %>% set_variable_metadata('gene', display_name = 'Gene ID', stable_id = 'VEUPATHDB_GENE_ID')
