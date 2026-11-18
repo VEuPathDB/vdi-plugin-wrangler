@@ -1,4 +1,4 @@
-cheese_name	country	region	latitude	longitude	milk_type	texture	age_months	fat_content_pct	protected_designation	blue_veined	avg_price_eur_kg
+cheese name	country	region	latitude	longitude	milk type	texture	age (months)	fat_content_pct	protected_designation	blue_veined	avg price eur/kg
 Parmigiano-Reggiano	Italy	Emilia-Romagna	44.7	10.64	cow	hard	24	32	yes	no	28.5
 Brie de Meaux	France	Ile-de-France	48.85	2.97	cow	soft	0.5	27	yes	no	18
 Manchego	Spain	La Mancha	39.4	-3	sheep	hard	12	31.5	yes	no	22
