@@ -88,12 +88,17 @@ wrangle <- function(input_dir) {
     )
   }
 
+  # entity_from_file may rename columns (e.g. "Pf ortholog" becomes "Pf.ortholog"), so take the
+  # actual variable names from the entity itself rather than the raw headers seen in
+  # preprocess_fn. The original headers are kept as provider labels.
+  user_variable_names <- setdiff(names(entity@data), "geneID__")
+
   # all user-supplied columns (including 'gene') are regular variables; 'geneID__' stays as the ID
-  entity <- entity %>% redetect_columns_as_variables(user_column_names)
+  entity <- entity %>% redetect_columns_as_variables(user_variable_names)
 
   # preserve the uploaded column order (gene = 1, then the others) in the visualization system
-  for (i in seq_along(user_column_names)) {
-    entity <- entity %>% set_variable_metadata(user_column_names[[i]], display_order = i)
+  for (i in seq_along(user_variable_names)) {
+    entity <- entity %>% set_variable_metadata(user_variable_names[[i]], display_order = i)
   }
 
   # give the 'gene' column the stable_id that has been used elsewhere for phenotype datasets
