@@ -9,6 +9,17 @@ make_mock_dir <- function(contents) {
   d
 }
 
+test_that(".first_text_block skips a leading thinking block", {
+  content <- list(
+    list(type = "thinking", thinking = "", signature = "abc"),
+    list(type = "text", text = "{\"ok\": true}")
+  )
+  expect_identical(.first_text_block(content), "{\"ok\": true}")
+  expect_identical(.first_text_block(list(list(type = "text", text = "hi"))), "hi")
+  expect_null(.first_text_block(list(list(type = "thinking", thinking = ""))))
+  expect_null(.first_text_block(list()))
+})
+
 test_that("mocks are ignored unless explicitly allowed", {
   d <- make_mock_dir('{"classify": ["labels_informative"]}')
   withr::with_envvar(c(WRANGLER_ALLOW_LLM_MOCKS = ""), {
