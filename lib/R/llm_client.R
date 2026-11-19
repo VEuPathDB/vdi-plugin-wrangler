@@ -187,6 +187,17 @@ llm_mocks_exhausted <- function() {
   ))
 }
 
+#' First `text` block of a Messages API `content` array, or NULL if none.
+#'
+#' The API may prepend non-text blocks (e.g. `thinking`), so `content[[1]]`
+#' cannot be assumed to hold the answer.
+.first_text_block <- function(content) {
+  for (block in content) {
+    if (identical(block$type, "text") && is.character(block$text)) return(block$text)
+  }
+  NULL
+}
+
 #' Call the Claude Messages API (or return a queued mock), returning raw text
 #'
 #' @param call_name Logical name for this call site, used for mock lookup and
@@ -281,10 +292,10 @@ llm_text <- function(call_name, model, system_prompt, user_prompt, max_tokens = 
       if (identical(parsed$stop_reason, "refusal")) {
         .stop_llm_refusal_error(parsed$stop_details$category, parsed$stop_details$explanation)
       }
-      text <- tryCatch(parsed$content[[1]]$text, error = function(e) NULL)
+      text <- .first_text_block(parsed$content)
       if (is.null(text)) {
         .stop_llm_api_error(paste(
-          "Claude API response missing content[[1]]$text:",
+          "Claude API response has no text content block:",
           as.character(jsonlite::toJSON(parsed, auto_unbox = TRUE))
         ))
       }
